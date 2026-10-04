@@ -27,7 +27,7 @@ export function stopView(ctx) {
       ${stay ? stayPanel(ctx, stay) : ''}
       ${guides.map((g) => html`<a class="btn guide-link" href="#/guide/${g.id}">✦ Guide: ${g.title}</a>`)}
       <div class="btns">${mapButton(stop.maps)}<button class="btn" type="button" data-action="tick" data-id="${stopTickId(stop)}">${ctx.ticks.has(stopTickId(stop)) ? 'Mark not done' : 'Mark done'}</button></div>
-      ${askLine(ctx, `${stop.title} (${formatDay(day.date)}, ${when})`)}
+      ${askLine(ctx, `${stop.title} (${formatDay(day.date)}, ${when})`, stop.title)}
     </div>`;
 }
 

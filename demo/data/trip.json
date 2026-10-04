@@ -5,7 +5,7 @@
     "endDate": "2030-06-02",
     "timezone": "Europe/Lisbon",
     "currency": "EUR",
-    "factsCheckedBetween": ["2030-05-01", "2030-05-01"],
+    "factsCheckedBetween": ["Sample data", "Sample data"],
     "pace": "Sample trip: one main sight each morning, a rest after lunch, trams and taxis instead of steep walks."
   },
   "travellers": {
@@ -15,7 +15,7 @@
     "dietary": ["Sample: one traveller is vegetarian. Every planned meal has vegetarian dishes."]
   },
   "alerts": [
-    { "date": "2030-06-02", "title": "Sample alert: tram works on the riverside", "text": "This is sample data showing how dated warnings appear. On a real trip it might be a strike or a closure, shown until its day has passed.", "checked": "2030-05-01", "sources": [] }
+    { "date": "2030-06-02", "title": "Sample alert: tram works on the riverside", "text": "This is sample data showing how dated warnings appear. On a real trip it might be a strike or a closure, shown until its day has passed.", "checked": "Sample data", "sources": [] }
   ],
   "stays": [
     { "id": "lisbon", "city": "Lisbon", "area": "Baixa", "type": "Apartment", "checkIn": "2030-06-01", "checkOut": "2030-06-03", "nights": 2, "status": "booked", "checkInFrom": "15:00", "checkOutBy": "11:00", "checkInMethod": "Sample: key box by the door.", "maps": "Praça do Comércio, Lisbon", "notes": "Sample stay on the flat grid of the Baixa, close to the tram stops." }

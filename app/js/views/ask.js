@@ -15,8 +15,8 @@ export const askAvailable = (ctx) => Boolean(safeUrl(ctx.private?.config?.claude
 export const askButton = (ctx) => (askAvailable(ctx)
   ? html`<button class="ask" type="button" data-action="ask" data-viewing="">✳ Ask Claude</button>` : '');
 
-export const askLine = (ctx, viewing) => (askAvailable(ctx)
-  ? html`<button class="askline" type="button" data-action="ask" data-viewing="${viewing}">✳ Ask Claude about ${short(viewing, 48)}</button>` : '');
+export const askLine = (ctx, viewing, label = viewing) => (askAvailable(ctx)
+  ? html`<button class="askline" type="button" data-action="ask" data-viewing="${viewing}">✳ Ask Claude about ${short(label, 40)}</button>` : '');
 
 export function askText(ctx, question) {
   const context = askContext({ trip: ctx.trip, now: ctx.now, ticks: ctx.ticks, viewing: ctx.ui.ask?.viewing || '' });
