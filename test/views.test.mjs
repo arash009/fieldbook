@@ -8,6 +8,13 @@ import { parseRoute } from '../app/js/router.js';
 import { todayView, dayView } from '../app/js/views/day.js';
 import { daysView } from '../app/js/views/days.js';
 import { askText, askUrl } from '../app/js/views/ask.js';
+import { stopView } from '../app/js/views/stop.js';
+import { bookingsView } from '../app/js/views/bookings.js';
+import { guideListView, guideView } from '../app/js/views/guide.js';
+import { infoView, infoCardView, infoCards } from '../app/js/views/info.js';
+import { renderApp } from '../app/js/views/shell.js';
+import { landingView } from '../app/js/views/landing.js';
+import { unlockView } from '../app/js/views/unlock.js';
 
 const demo = indexPayload(await loadTripDir(fileURLToPath(new URL('../demo/', import.meta.url))));
 const ctxAt = (date, time, hash = '#/today', extra = {}) => ({
@@ -58,4 +65,62 @@ test('ask text and url', () => {
   assert.equal(askUrl({ claudeProjectUrl: 'https://claude.ai/new', prefillParam: 'q' }, 'hi there'), 'https://claude.ai/new?q=hi+there');
   assert.equal(askUrl({ claudeProjectUrl: 'https://claude.ai/project/abc' }, 'x'), 'https://claude.ai/project/abc');
   assert.equal(askUrl({ claudeProjectUrl: '' }, 'x'), null);
+});
+
+test('stop detail: route tabs, taxi tab, board, meal and stay panels', () => {
+  const route = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle')));
+  assert.match(route, /<b>Direction Martim Moniz<\/b> to <b>Miradouro de Santa Luzia<\/b>/);
+  assert.match(route, /Going later\?/);
+  const taxi = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle', { ui: { tabs: { 'route:d1-tram-castle': 1 } } })));
+  assert.match(taxi, /Show the driver/);
+  const board = String(stopView(ctxAt('2030-06-02', '15:10', '#/stop/d2-train')));
+  assert.match(board, /<tr class="plan gone">/);
+  assert.match(board, /LAST/);
+  const meal = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-lunch')));
+  assert.match(meal, /Sou vegetariano/);
+  assert.match(meal, /Pastry stop/);
+  const stay = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-rest')));
+  assert.match(stay, /Rua Exemplo 10/);
+  assert.match(String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/zzz'))), /Not found/);
+});
+
+test('bookings: filters and ticks', () => {
+  const todo = String(bookingsView(ctxAt('2030-05-30', '09:00', '#/bookings')));
+  assert.match(todo, /3 left to do/);
+  assert.ok(todo.indexOf('Jerónimos Monastery tickets') < todo.indexOf('São Jorge Castle tickets'), 'deadline sorts first');
+  const ticked = String(bookingsView(ctxAt('2030-05-30', '09:00', '#/bookings', { ticks: new Set(['booking:castle']), ui: { tabs: {}, bookingFilter: 'done' } })));
+  assert.match(ticked, /TICKED/);
+  assert.match(ticked, /Apartment in the Baixa/);
+});
+
+test('guide list and page', () => {
+  const list = String(guideListView(ctxAt('2030-06-01', '09:00', '#/guide')));
+  assert.ok(list.indexOf('Lisbon') < list.indexOf('São Jorge Castle') && list.indexOf('São Jorge Castle') < list.indexOf('Belém Tower'));
+  const page = String(guideView(ctxAt('2030-06-01', '09:00', '#/guide/belem-tower')));
+  assert.match(page, /Can you find the rhino\?/);
+  assert.match(page, /en\.wikipedia\.org/);
+});
+
+test('info cards render every section type', () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/info');
+  assert.match(String(infoView(ctx)), /Getting around/);
+  for (const card of infoCards(ctx.trip)) {
+    const out = String(infoCardView({ ...ctx, route: parseRoute(`#/info/${card.id}`) }));
+    assert.doesNotMatch(out, /Not found/, card.id);
+  }
+  assert.match(String(infoCardView({ ...ctx, route: parseRoute('#/info/stay') })), /Show the driver/);
+});
+
+test('shell picks the view, the active tab, sheets and the demo ribbon', () => {
+  const out = renderApp(ctxAt('2030-06-01', '09:00', '#/guide/castle', { ui: { tabs: {}, ask: { viewing: 'São Jorge Castle', q: '' }, driver: 'Castelo de São Jorge' } }));
+  assert.match(String(out.main), /Sample trip/);
+  assert.match(String(out.main), /Ask Claude/);
+  assert.match(String(out.main), /class="driver"/);
+  assert.match(String(out.nav), /href="#\/guide" class="on"/);
+});
+
+test('landing and unlock screens', () => {
+  assert.match(String(landingView()), /Try the demo/);
+  assert.match(String(unlockView({ error: "That passphrase didn't work." })), /role="alert"/);
+  assert.match(String(unlockView({ busy: true })), /Unlocking…/);
 });
