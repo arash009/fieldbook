@@ -1,0 +1,38 @@
+{
+  "checked": "Sample data, not checked",
+  "lines": {
+    "lis-28": { "label": "28", "name": "Tram 28", "colour": "#f2c200" },
+    "lis-15": { "label": "15E", "name": "Tram 15E", "colour": "#f2c200" },
+    "lis-train": { "label": "CP", "name": "Suburban train", "colour": "#334155" }
+  },
+  "services": {
+    "lis-tram": { "hours": [{ "days": [0, 1, 2, 3, 4, 5, 6], "from": "06:00", "to": "23:00" }], "hoursText": "Sample: about 06:00–23:00", "frequency": "Sample: every 10–15 minutes", "sources": ["https://www.carris.pt/en/"] }
+  },
+  "routes": {
+    "baixa-castle": { "options": [
+      { "mode": "tram", "label": "Tram", "minutes": [20, 30], "service": "lis-tram", "legs": [
+        { "walk": 300, "minutes": 5, "text": "to the Rua da Conceição stop" },
+        { "line": "lis-28", "direction": "Martim Moniz", "to": "Miradouro de Santa Luzia" },
+        { "walk": 500, "minutes": 10, "text": "uphill to the castle gate" }
+      ], "later": "Sample: trams run all day; queues are shortest before 10:00.", "fare": "Sample fare.", "pay": "Sample: tap a reloadable card when boarding." },
+      { "mode": "taxi", "label": "Taxi", "minutes": [10, 15], "fareShort": "sample fare", "fare": "Sample: metered.", "driverText": "Castelo de São Jorge" }
+    ] },
+    "baixa-belem": { "options": [
+      { "mode": "tram", "label": "Tram", "minutes": [25, 35], "service": "lis-tram", "legs": [
+        { "line": "lis-15", "direction": "Algés", "to": "Mosteiro Jerónimos", "text": "Board at Praça do Comércio" }
+      ], "fare": "Sample fare.", "pay": "Sample: tap a reloadable card when boarding." },
+      { "mode": "taxi", "label": "Taxi", "minutes": [15, 20], "fareShort": "sample fare", "fare": "Sample: metered.", "driverText": "Mosteiro dos Jerónimos" }
+    ] }
+  },
+  "boards": {
+    "belem-cais": { "title": "Belém → Cais do Sodré (sample)", "date": "2030-06-02", "tabs": [
+      { "label": "To Cais do Sodré", "stations": ["Belém", "Cais do Sodré"], "plan": "15:02", "rows": [
+        { "times": ["14:22", "14:30"] },
+        { "times": ["14:42", "14:50"] },
+        { "times": ["15:02", "15:10"] },
+        { "times": ["15:22", "15:30"] },
+        { "times": ["15:42", "15:50"], "flag": "LAST", "note": "Sample: shows how a flagged train looks." }
+      ] }
+    ], "notes": "Sample timetable for the demo.", "checked": "Sample data, not checked", "sources": [] }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "guides": [
+    { "id": "lisbon", "kind": "city", "title": "Lisbon", "city": "Lisbon", "why": "Portugal's capital, spread over steep hills above the River Tagus. Much of it was rebuilt after the great earthquake of 1755.",
+      "lookFor": ["The yellow trams squeezing through streets barely wider than they are.", "Patterned pavements of small black and white stones (calçada)."],
+      "facts": ["On 1 November 1755 an earthquake, a tsunami and fires destroyed much of the city.", "The flat grid of the Baixa was laid out afterwards under the Marquis of Pombal."],
+      "kids": [{ "q": "Why do so many buildings have tiles on the outside?", "a": "Glazed tiles (azulejos) are tough, easy to clean and keep walls cool. They are a Lisbon speciality." }],
+      "sources": ["https://en.wikipedia.org/wiki/1755_Lisbon_earthquake", "https://en.wikipedia.org/wiki/Pombaline_Lower_Town"], "checked": "Sample data" },
+    { "id": "castle", "title": "São Jorge Castle", "city": "Lisbon", "why": "A hilltop fortress over the old town, with the best view in Lisbon. People have fortified this hill for well over two thousand years.",
+      "lookFor": ["The view across the rooftops to the river from the walls.", "Peacocks wandering in the gardens."],
+      "facts": ["The Moorish castle was captured in 1147 by Afonso Henriques, Portugal's first king, with help from crusaders.", "It served as a royal palace until the early 1500s, when the kings moved to a new palace by the river."],
+      "kids": [{ "q": "How many towers can you count from the main courtyard?", "a": "Count them as you walk the walls. There are more than ten." }],
+      "sources": ["https://en.wikipedia.org/wiki/S%C3%A3o_Jorge_Castle", "https://castelodesaojorge.pt/en/"], "checked": "Sample data" },
+    { "id": "jeronimos", "title": "Jerónimos Monastery", "city": "Lisbon", "why": "A huge, lace-like monastery paid for by the riches of Portugal's sea voyages. It's the masterpiece of the Manueline style.",
+      "lookFor": ["Ropes, shells and sea creatures carved into the stone of the cloister.", "Vasco da Gama's tomb just inside the church."],
+      "facts": ["King Manuel I began building it around 1501.", "It and Belém Tower became a UNESCO World Heritage Site in 1983."],
+      "kids": [{ "q": "Why would a church be decorated with ropes and knots?", "a": "They celebrate the sailors and ships that made Portugal rich." }],
+      "sources": ["https://en.wikipedia.org/wiki/Jer%C3%B3nimos_Monastery"], "checked": "Sample data" },
+    { "id": "belem-tower", "title": "Belém Tower", "city": "Lisbon", "why": "A small fortress at the edge of the river that guarded the way into Lisbon. It was the last thing sailors saw as they left.",
+      "lookFor": ["A stone rhinoceros head carved under one of the turrets.", "Stone ropes knotted around the walls."],
+      "facts": ["It was built between about 1514 and 1519.", "The rhinoceros is thought to recall the one sent from India to Lisbon in 1515."],
+      "kids": [{ "q": "Can you find the rhino?", "a": "Look up under the turrets on the west side. It's one of the first rhinos ever carved in Europe." }],
+      "sources": ["https://en.wikipedia.org/wiki/Bel%C3%A9m_Tower"], "checked": "Sample data" }
+  ]
+}
