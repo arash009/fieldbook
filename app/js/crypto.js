@@ -17,7 +17,11 @@ export function fromBase64(b64) {
   return out;
 }
 
-export const randomBytes = (n) => globalThis.crypto.getRandomValues(new Uint8Array(n));
+export function randomBytes(n) {
+  const out = new Uint8Array(n);
+  for (let i = 0; i < n; i += 65536) globalThis.crypto.getRandomValues(out.subarray(i, i + 65536));
+  return out;
+}
 
 export async function deriveKey(passphrase, salt, iterations = ITERATIONS) {
   const base = await subtle().importKey('raw', encoder.encode(passphrase.normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
