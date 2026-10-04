@@ -1,0 +1,15 @@
+{
+  "name": "fieldbook",
+  "version": "0.1.0",
+  "description": "An offline, encrypted trip companion that turns an itinerary file into a phone app.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "bin": { "fieldbook": "scripts/fieldbook.mjs" },
+  "scripts": {
+    "test": "node --test",
+    "build": "node scripts/fieldbook.mjs build",
+    "serve": "node scripts/fieldbook.mjs serve",
+    "validate:demo": "node scripts/fieldbook.mjs validate --trip demo"
+  }
+}
