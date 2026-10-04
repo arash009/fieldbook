@@ -13,7 +13,8 @@ export function indexPayload(payload) {
 }
 
 export function rebaseDates(value, offset) {
-  if (typeof value === 'string') return /^\d{4}-\d{2}-\d{2}$/.test(value) ? addDays(value, offset) : value;
+  // Dates, and keys that start with a date such as a dining reference "2030-06-01/lunch".
+  if (typeof value === 'string') return value.replace(/^(\d{4}-\d{2}-\d{2})(?=$|\/)/, (d) => addDays(d, offset));
   if (Array.isArray(value)) return value.map((v) => rebaseDates(v, offset));
   if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, rebaseDates(v, offset)]));
   return value;

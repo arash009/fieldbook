@@ -124,3 +124,13 @@ test('landing and unlock screens', () => {
   assert.match(String(unlockView({ error: "That passphrase didn't work." })), /role="alert"/);
   assert.match(String(unlockView({ busy: true })), /Unlocking…/);
 });
+
+test('the demo still links meals, boards and days after its dates are moved to today', async () => {
+  const { rebaseDates } = await import('../app/js/data.js');
+  const raw = await loadTripDir(fileURLToPath(new URL('../demo/', import.meta.url)));
+  const moved = indexPayload(rebaseDates(raw, 100));
+  const day1 = moved.trip.days[0].date;
+  const ctx = { ...moved, mode: 'demo', now: makeLocal(day1, '09:00'), ticks: new Set(), ui: { tabs: {} }, route: parseRoute('#/stop/d1-lunch') };
+  assert.match(String(stopView(ctx)), /Sou vegetariano/);
+  assert.match(String(todayView({ ...ctx, route: parseRoute('#/today') })), /Leaving now/);
+});

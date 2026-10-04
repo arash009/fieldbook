@@ -57,8 +57,8 @@ test('ticks persist per trip and survive broken storage', () => {
 });
 
 test('rebaseDates shifts every YYYY-MM-DD string and nothing else', () => {
-  const out = rebaseDates({ a: '2030-06-01', b: ['2030-06-02', 'x'], c: { d: '2030-06-01T10:00', e: 5 } }, 3);
-  assert.deepEqual(out, { a: '2030-06-04', b: ['2030-06-05', 'x'], c: { d: '2030-06-01T10:00', e: 5 } });
+  const out = rebaseDates({ a: '2030-06-01', b: ['2030-06-02', 'x'], c: { d: '2030-06-01T10:00', e: 5 }, f: '2030-06-01/lunch' }, 3);
+  assert.deepEqual(out, { a: '2030-06-04', b: ['2030-06-05', 'x'], c: { d: '2030-06-01T10:00', e: 5 }, f: '2030-06-04/lunch' });
 });
 
 test('indexPayload fills defaults and gives boards their ids', () => {
