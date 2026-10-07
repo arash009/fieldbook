@@ -71,7 +71,8 @@ test('ask text and url', () => {
 
 test('stop detail: route tabs, taxi tab, board, meal and stay panels', () => {
   const route = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle')));
-  assert.match(route, /<b>Direction Martim Moniz<\/b> to <b>Miradouro de Santa Luzia<\/b>/);
+  assert.match(route, /<b>Direction Martim Moniz<\/b> · 3 stops[\s\S]*Rua da Conceição[\s\S]*BOARD[\s\S]*Miradouro de Santa Luzia[\s\S]*GET OFF/);
+  assert.match(route, /Tram 28 map ›/);
   assert.match(route, /Going later\?/);
   const taxi = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle', { ui: { tabs: { 'route:d1-tram-castle': 1 } } })));
   assert.match(taxi, /Show the driver/);

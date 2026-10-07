@@ -5,48 +5,154 @@
     "endDate": "2030-06-02",
     "timezone": "Europe/Lisbon",
     "currency": "EUR",
-    "factsCheckedBetween": ["Sample data", "Sample data"],
+    "factsCheckedBetween": [
+      "Sample data",
+      "Sample data"
+    ],
     "pace": "Sample trip: one main sight each morning, a rest after lunch, trams and taxis instead of steep walks."
   },
   "travellers": {
     "adults": 2,
-    "childrenAges": [9],
-    "mobility": ["Sample: one traveller prefers to avoid steep hills, so trams and taxis cover the climbs."],
-    "dietary": ["Sample: one traveller is vegetarian. Every planned meal has vegetarian dishes."]
+    "childrenAges": [
+      9
+    ],
+    "mobility": [
+      "Sample: one traveller prefers to avoid steep hills, so trams and taxis cover the climbs."
+    ],
+    "dietary": [
+      "Sample: one traveller is vegetarian. Every planned meal has vegetarian dishes."
+    ]
   },
   "alerts": [
-    { "date": "2030-06-02", "title": "Sample alert: tram works on the riverside", "text": "This is sample data showing how dated warnings appear. On a real trip it might be a strike or a closure, shown until its day has passed.", "checked": "Sample data", "sources": [] }
+    {
+      "date": "2030-06-02",
+      "title": "Sample alert: tram works on the riverside",
+      "text": "This is sample data showing how dated warnings appear. On a real trip it might be a strike or a closure, shown until its day has passed.",
+      "checked": "Sample data",
+      "sources": []
+    }
   ],
   "stays": [
-    { "id": "lisbon", "city": "Lisbon", "area": "Baixa", "type": "Apartment", "checkIn": "2030-06-01", "checkOut": "2030-06-03", "nights": 2, "status": "booked", "checkInFrom": "15:00", "checkOutBy": "11:00", "checkInMethod": "Sample: key box by the door.", "maps": "Praça do Comércio, Lisbon", "notes": "Sample stay on the flat grid of the Baixa, close to the tram stops." }
+    {
+      "id": "lisbon",
+      "city": "Lisbon",
+      "area": "Baixa",
+      "type": "Apartment",
+      "checkIn": "2030-06-01",
+      "checkOut": "2030-06-03",
+      "nights": 2,
+      "status": "booked",
+      "checkInFrom": "15:00",
+      "checkOutBy": "11:00",
+      "checkInMethod": "Sample: key box by the door.",
+      "maps": "Praça do Comércio, Lisbon",
+      "notes": "Sample stay on the flat grid of the Baixa, close to the tram stops."
+    }
   ],
   "localTransport": [
     {
       "city": "Lisbon",
       "summary": "Sample: four metro lines and the historic trams. Tram 28 climbs to the castle; tram 15E runs along the river to Belém.",
-      "stops": { "intoTown": "Praça do Comércio", "backFromTown": "Praça do Comércio", "note": "Sample data: check stops on the operator's site.", "station": "Cais do Sodré" },
+      "stops": {
+        "intoTown": "Praça do Comércio",
+        "backFromTown": "Praça do Comércio",
+        "note": "Sample data: check stops on the operator's site.",
+        "station": "Cais do Sodré"
+      },
       "routes": [
-        { "to": "São Jorge Castle", "how": "Tram 28 uphill, then a short walk.", "minutes": "about 25" },
-        { "to": "Belém", "how": "Tram 15E along the river.", "minutes": "about 30" }
+        {
+          "to": "São Jorge Castle",
+          "how": "Tram 28 uphill, then a short walk.",
+          "minutes": "about 25"
+        },
+        {
+          "to": "Belém",
+          "how": "Tram 15E along the river.",
+          "minutes": "about 30"
+        }
       ],
       "fare": "Sample: buy a reloadable card at metro stations.",
       "howToPay": "Sample: tap the card on the reader when boarding.",
-      "sources": ["https://www.carris.pt/en/", "https://www.metrolisboa.pt/en/"]
+      "sources": [
+        "https://www.carris.pt/en/",
+        "https://www.metrolisboa.pt/en/"
+      ]
     }
   ],
   "dining": [
-    { "date": "2030-06-01", "meal": "lunch", "place": "Café Exemplo (sample)", "city": "Lisbon", "address": "Sample street 1, Alfama", "badge": "Vegetarian menu", "setup": "Sample: a separate vegetarian menu.", "hoursThatDay": "12:00–15:00", "closed": "Mondays", "book": false, "maps": "Alfama, Lisbon", "source": null },
-    { "date": "2030-06-01", "meal": "dinner", "place": "Casa Sample", "city": "Lisbon", "address": "Sample street 2, Bairro Alto", "badge": "Vegetarian options", "setup": "Sample: several vegetarian mains.", "hoursThatDay": "19:00–23:00", "closed": null, "book": true, "maps": "Bairro Alto, Lisbon", "source": null },
-    { "date": "2030-06-02", "meal": "lunch", "place": "Belém Sample Kitchen", "city": "Lisbon", "address": "Sample street 3, Belém", "badge": "Vegetarian menu", "setup": "Sample: a vegetarian set lunch.", "hoursThatDay": "12:00–16:00", "closed": null, "book": false, "maps": "Belém, Lisbon", "source": null }
+    {
+      "date": "2030-06-01",
+      "meal": "lunch",
+      "place": "Café Exemplo (sample)",
+      "city": "Lisbon",
+      "address": "Sample street 1, Alfama",
+      "badge": "Vegetarian menu",
+      "setup": "Sample: a separate vegetarian menu.",
+      "hoursThatDay": "12:00–15:00",
+      "closed": "Mondays",
+      "book": false,
+      "maps": "Alfama, Lisbon",
+      "source": null
+    },
+    {
+      "date": "2030-06-01",
+      "meal": "dinner",
+      "place": "Casa Sample",
+      "city": "Lisbon",
+      "address": "Sample street 2, Bairro Alto",
+      "badge": "Vegetarian options",
+      "setup": "Sample: several vegetarian mains.",
+      "hoursThatDay": "19:00–23:00",
+      "closed": null,
+      "book": true,
+      "maps": "Bairro Alto, Lisbon",
+      "source": null
+    },
+    {
+      "date": "2030-06-02",
+      "meal": "lunch",
+      "place": "Belém Sample Kitchen",
+      "city": "Lisbon",
+      "address": "Sample street 3, Belém",
+      "badge": "Vegetarian menu",
+      "setup": "Sample: a vegetarian set lunch.",
+      "hoursThatDay": "12:00–16:00",
+      "closed": null,
+      "book": false,
+      "maps": "Belém, Lisbon",
+      "source": null
+    }
   ],
   "diningExtras": [
-    { "kind": "Treats", "place": "Pastry stop (sample)", "city": "Lisbon", "where": "Belém, near the monastery", "note": "Sample: custard tarts to take away." }
+    {
+      "kind": "Treats",
+      "place": "Pastry stop (sample)",
+      "city": "Lisbon",
+      "where": "Belém, near the monastery",
+      "note": "Sample: custard tarts to take away."
+    }
   ],
   "transfers": [
-    { "id": "airport", "date": "2030-06-01", "title": "Airport to the Baixa (sample)", "recommended": "metro", "options": [
-      { "mode": "metro", "summary": "Red line, then a change to the blue or green line.", "cost": "Sample fare.", "notes": "" },
-      { "mode": "taxi", "summary": "From the rank outside arrivals.", "cost": "Sample: metered.", "notes": "" }
-    ] }
+    {
+      "id": "airport",
+      "date": "2030-06-01",
+      "title": "Airport to the Baixa (sample)",
+      "recommended": "metro",
+      "options": [
+        {
+          "mode": "metro",
+          "summary": "Red line, then a change to the blue or green line.",
+          "cost": "Sample fare.",
+          "notes": ""
+        },
+        {
+          "mode": "taxi",
+          "summary": "From the rank outside arrivals.",
+          "cost": "Sample: metered.",
+          "notes": ""
+        }
+      ]
+    }
   ],
   "days": [
     {
@@ -55,11 +161,52 @@
       "city": "Lisbon",
       "title": "Old town and the castle",
       "stops": [
-        { "id": "d1-tram-castle", "time": "09:30", "title": "Tram 28 towards the castle", "type": "transport", "route": "baixa-castle", "notes": "Board early before the queues. A taxi is the easy alternative uphill.", "maps": "Rua da Conceição, Lisbon" },
-        { "id": "d1-castle", "time": "10:15", "title": "São Jorge Castle", "type": "sight", "guide": "castle", "notes": "Views over the whole city from the walls. Sample: buy tickets at the gate.", "maps": "Castelo de São Jorge, Lisbon" },
-        { "id": "d1-lunch", "time": "12:30", "title": "Lunch at Café Exemplo", "type": "meal", "dining": "2030-06-01/lunch", "notes": "Downhill from the castle into Alfama.", "maps": "Alfama, Lisbon" },
-        { "id": "d1-rest", "time": "14:00", "timeLabel": "After lunch", "title": "Rest at the apartment", "type": "rest", "stay": "lisbon", "notes": "Taxi back down to the Baixa.", "maps": "Praça do Comércio, Lisbon" },
-        { "id": "d1-dinner", "time": "19:30", "title": "Dinner at Casa Sample", "type": "meal", "dining": "2030-06-01/dinner", "notes": "Book a table.", "maps": "Bairro Alto, Lisbon" }
+        {
+          "id": "d1-tram-castle",
+          "time": "09:30",
+          "title": "Tram 28 towards the castle",
+          "type": "transport",
+          "route": "baixa-castle",
+          "notes": "Board early before the queues. A taxi is the easy alternative uphill.",
+          "maps": "Rua da Conceição, Lisbon"
+        },
+        {
+          "id": "d1-castle",
+          "time": "10:15",
+          "title": "São Jorge Castle",
+          "type": "sight",
+          "guide": "castle",
+          "notes": "Views over the whole city from the walls. Sample: buy tickets at the gate.",
+          "maps": "Castelo de São Jorge, Lisbon"
+        },
+        {
+          "id": "d1-lunch",
+          "time": "12:30",
+          "title": "Lunch at Café Exemplo",
+          "type": "meal",
+          "dining": "2030-06-01/lunch",
+          "notes": "Downhill from the castle into Alfama.",
+          "maps": "Alfama, Lisbon"
+        },
+        {
+          "id": "d1-rest",
+          "time": "14:00",
+          "timeLabel": "After lunch",
+          "title": "Rest at the apartment",
+          "type": "rest",
+          "stay": "lisbon",
+          "notes": "Taxi back down to the Baixa.",
+          "maps": "Praça do Comércio, Lisbon"
+        },
+        {
+          "id": "d1-dinner",
+          "time": "19:30",
+          "title": "Dinner at Casa Sample",
+          "type": "meal",
+          "dining": "2030-06-01/dinner",
+          "notes": "Book a table.",
+          "maps": "Bairro Alto, Lisbon"
+        }
       ]
     },
     {
@@ -68,38 +215,199 @@
       "city": "Lisbon",
       "title": "Belém by the river",
       "stops": [
-        { "id": "d2-tram-belem", "time": "09:00", "title": "Tram 15E to Belém", "type": "transport", "route": "baixa-belem", "notes": "Along the river, about 30 minutes.", "maps": "Praça do Comércio, Lisbon" },
-        { "id": "d2-jeronimos", "time": "10:00", "title": "Jerónimos Monastery", "type": "sight", "guide": "jeronimos", "notes": "Start with the cloister.", "maps": "Mosteiro dos Jerónimos, Lisbon" },
-        { "id": "d2-tower", "time": "11:45", "title": "Belém Tower", "type": "sight", "optional": true, "guide": "belem-tower", "notes": "See it from the riverside; going inside is optional.", "maps": "Torre de Belém, Lisbon" },
-        { "id": "d2-lunch", "time": "12:45", "title": "Lunch at Belém Sample Kitchen", "type": "meal", "dining": "2030-06-02/lunch", "notes": "Then custard tarts for the road.", "maps": "Belém, Lisbon" },
-        { "id": "d2-train", "time": "15:02", "title": "Train back to Cais do Sodré", "type": "transport", "board": "belem-cais", "notes": "Sample timetable: suburban trains run often along the river.", "maps": "Estação de Belém, Lisbon" }
+        {
+          "id": "d2-tram-belem",
+          "time": "09:00",
+          "title": "Tram 15E to Belém",
+          "type": "transport",
+          "route": "baixa-belem",
+          "notes": "Along the river, about 30 minutes.",
+          "maps": "Praça do Comércio, Lisbon"
+        },
+        {
+          "id": "d2-jeronimos",
+          "time": "10:00",
+          "title": "Jerónimos Monastery",
+          "type": "sight",
+          "guide": "jeronimos",
+          "notes": "Start with the cloister.",
+          "maps": "Mosteiro dos Jerónimos, Lisbon"
+        },
+        {
+          "id": "d2-tower",
+          "time": "11:45",
+          "title": "Belém Tower",
+          "type": "sight",
+          "optional": true,
+          "guide": "belem-tower",
+          "notes": "See it from the riverside; going inside is optional.",
+          "maps": "Torre de Belém, Lisbon"
+        },
+        {
+          "id": "d2-lunch",
+          "time": "12:45",
+          "title": "Lunch at Belém Sample Kitchen",
+          "type": "meal",
+          "dining": "2030-06-02/lunch",
+          "notes": "Then custard tarts for the road.",
+          "maps": "Belém, Lisbon"
+        },
+        {
+          "id": "d2-train",
+          "time": "15:02",
+          "title": "Train back to Cais do Sodré",
+          "type": "transport",
+          "board": "belem-cais",
+          "notes": "Sample timetable: suburban trains run often along the river.",
+          "maps": "Estação de Belém, Lisbon"
+        }
       ]
     }
   ],
   "bookings": [
-    { "id": "apartment", "item": "Apartment in the Baixa (2 nights)", "forDate": "2030-06-01", "deadline": null, "status": "booked", "url": null, "notes": "Sample booking." },
-    { "id": "castle", "item": "São Jorge Castle tickets", "forDate": "2030-06-01", "deadline": null, "status": "todo", "url": "https://castelodesaojorge.pt/en/", "notes": "Sample: buy online to skip the ticket queue." },
-    { "id": "dinner", "item": "Table at Casa Sample", "forDate": "2030-06-01", "deadline": null, "status": "unconfirmed", "url": null, "notes": "Sample." },
-    { "id": "monastery", "item": "Jerónimos Monastery tickets", "forDate": "2030-06-02", "deadline": "2030-05-31", "status": "todo", "url": null, "notes": "Sample deadline, to show sorting." },
-    { "id": "tower", "item": "Belém Tower entry", "forDate": "2030-06-02", "deadline": null, "status": "optional", "url": null, "notes": "Sample." }
+    {
+      "id": "apartment",
+      "item": "Apartment in the Baixa (2 nights)",
+      "forDate": "2030-06-01",
+      "deadline": null,
+      "status": "booked",
+      "url": null,
+      "notes": "Sample booking."
+    },
+    {
+      "id": "castle",
+      "item": "São Jorge Castle tickets",
+      "forDate": "2030-06-01",
+      "deadline": null,
+      "status": "todo",
+      "url": "https://castelodesaojorge.pt/en/",
+      "notes": "Sample: buy online to skip the ticket queue."
+    },
+    {
+      "id": "dinner",
+      "item": "Table at Casa Sample",
+      "forDate": "2030-06-01",
+      "deadline": null,
+      "status": "unconfirmed",
+      "url": null,
+      "notes": "Sample."
+    },
+    {
+      "id": "monastery",
+      "item": "Jerónimos Monastery tickets",
+      "forDate": "2030-06-02",
+      "deadline": "2030-05-31",
+      "status": "todo",
+      "url": null,
+      "notes": "Sample deadline, to show sorting."
+    },
+    {
+      "id": "tower",
+      "item": "Belém Tower entry",
+      "forDate": "2030-06-02",
+      "deadline": null,
+      "status": "optional",
+      "url": null,
+      "notes": "Sample."
+    }
   ],
   "tips": [
-    { "topic": "Hills", "text": "Sample tip: Lisbon is steep. Trams, funiculars and taxis save the climbs.", "source": null },
-    { "topic": "Trams", "text": "Sample tip: the historic trams are small and fill up; board early or at the first stop.", "source": "https://www.carris.pt/en/" }
+    {
+      "topic": "Hills",
+      "text": "Sample tip: Lisbon is steep. Trams, funiculars and taxis save the climbs.",
+      "source": null
+    },
+    {
+      "topic": "Trams",
+      "text": "Sample tip: the historic trams are small and fill up; board early or at the first stop.",
+      "source": "https://www.carris.pt/en/"
+    }
   ],
   "links": [
-    { "label": "Carris (trams and buses)", "url": "https://www.carris.pt/en/" },
-    { "label": "Lisbon metro", "url": "https://www.metrolisboa.pt/en/" }
+    {
+      "label": "Carris (trams and buses)",
+      "url": "https://www.carris.pt/en/"
+    },
+    {
+      "label": "Lisbon metro",
+      "url": "https://www.metrolisboa.pt/en/"
+    }
   ],
   "ui": {
-    "dietPhrase": { "say": "Sou vegetariano", "meaning": "I'm vegetarian" },
+    "dietPhrase": {
+      "say": "Sou vegetariano",
+      "meaning": "I'm vegetarian"
+    },
     "infoCards": [
-      { "id": "transport", "title": "Getting around", "subtitle": "Trams, metro, taxis", "icon": "T", "colour": "#f2c200", "sections": ["localTransport:Lisbon", "transfer:airport"] },
-      { "id": "food", "title": "Food", "subtitle": "Meals and treats", "icon": "🍴", "colour": "#15803d", "sections": ["dining", "diningExtras"] },
-      { "id": "trains", "title": "Trains", "subtitle": "Departure boards", "icon": "🚆", "colour": "#334155", "sections": ["boards"] },
-      { "id": "stay", "title": "Our stay", "subtitle": "Address, check-in", "icon": "🏠", "colour": "#4338ca", "sections": ["stays"] },
-      { "id": "tips", "title": "Tips", "subtitle": "Good to know", "icon": "★", "colour": "#c2410c", "sections": ["tips", "travellers"] },
-      { "id": "links", "title": "Links", "subtitle": "Official sites", "icon": "🔗", "colour": "#000000", "sections": ["links"] }
+      {
+        "id": "transport",
+        "title": "Getting around",
+        "subtitle": "Trams, metro, taxis",
+        "icon": "T",
+        "colour": "#f2c200",
+        "sections": [
+          "localTransport:Lisbon",
+          "transfer:airport"
+        ]
+      },
+      {
+        "id": "food",
+        "title": "Food",
+        "subtitle": "Meals and treats",
+        "icon": "🍴",
+        "colour": "#15803d",
+        "sections": [
+          "dining",
+          "diningExtras"
+        ]
+      },
+      {
+        "id": "trains",
+        "title": "Trains",
+        "subtitle": "Departure boards",
+        "icon": "🚆",
+        "colour": "#334155",
+        "sections": [
+          "boards"
+        ]
+      },
+      {
+        "id": "stay",
+        "title": "Our stay",
+        "subtitle": "Address, check-in",
+        "icon": "🏠",
+        "colour": "#4338ca",
+        "sections": [
+          "stays"
+        ]
+      },
+      {
+        "id": "tips",
+        "title": "Tips",
+        "subtitle": "Good to know",
+        "icon": "★",
+        "colour": "#c2410c",
+        "sections": [
+          "tips",
+          "travellers"
+        ]
+      },
+      {
+        "id": "links",
+        "title": "Links",
+        "subtitle": "Official sites",
+        "icon": "🔗",
+        "colour": "#000000",
+        "sections": [
+          "links"
+        ]
+      }
     ]
+  },
+  "cities": {
+    "Lisbon": {
+      "lat": 38.7223,
+      "lng": -9.1393
+    }
   }
 }

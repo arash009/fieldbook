@@ -1,38 +1,308 @@
 {
   "checked": "Sample data, not checked",
   "lines": {
-    "lis-28": { "label": "28", "name": "Tram 28", "colour": "#f2c200" },
-    "lis-15": { "label": "15E", "name": "Tram 15E", "colour": "#f2c200" },
-    "lis-train": { "label": "CP", "name": "Suburban train", "colour": "#334155" }
+    "lis-28": {
+      "label": "28",
+      "name": "Tram 28",
+      "colour": "#f2c200",
+      "mapUrl": "https://www.carris.pt/en/",
+      "notes": "Sample stop list: a few of the real stops, with approximate positions.",
+      "stops": [
+        {
+          "name": "Prazeres",
+          "lat": 38.7149,
+          "lng": -9.17
+        },
+        {
+          "name": "Estrela",
+          "lat": 38.7128,
+          "lng": -9.1601
+        },
+        {
+          "name": "Calhariz–Bica",
+          "lat": 38.7104,
+          "lng": -9.1464
+        },
+        {
+          "name": "Chiado",
+          "lat": 38.7107,
+          "lng": -9.1424
+        },
+        {
+          "name": "Rua da Conceição",
+          "lat": 38.7106,
+          "lng": -9.1368
+        },
+        {
+          "name": "Sé",
+          "lat": 38.7099,
+          "lng": -9.1331
+        },
+        {
+          "name": "Limoeiro",
+          "lat": 38.7108,
+          "lng": -9.1306
+        },
+        {
+          "name": "Miradouro de Santa Luzia",
+          "lat": 38.7117,
+          "lng": -9.1298
+        },
+        {
+          "name": "Graça",
+          "lat": 38.7166,
+          "lng": -9.1306
+        },
+        {
+          "name": "Martim Moniz",
+          "lat": 38.7158,
+          "lng": -9.1359
+        }
+      ]
+    },
+    "lis-15": {
+      "label": "15E",
+      "name": "Tram 15E",
+      "colour": "#f2c200",
+      "mapUrl": "https://www.carris.pt/en/",
+      "notes": "Sample stop list: a few of the real stops, with approximate positions.",
+      "stops": [
+        {
+          "name": "Praça da Figueira",
+          "lat": 38.7139,
+          "lng": -9.1384
+        },
+        {
+          "name": "Praça do Comércio",
+          "lat": 38.7076,
+          "lng": -9.1365
+        },
+        {
+          "name": "Cais do Sodré",
+          "lat": 38.7062,
+          "lng": -9.1447
+        },
+        {
+          "name": "Santos",
+          "lat": 38.7067,
+          "lng": -9.1561
+        },
+        {
+          "name": "Alcântara",
+          "lat": 38.7044,
+          "lng": -9.1755
+        },
+        {
+          "name": "Belém",
+          "lat": 38.6973,
+          "lng": -9.2033
+        },
+        {
+          "name": "Mosteiro Jerónimos",
+          "lat": 38.6977,
+          "lng": -9.2057
+        },
+        {
+          "name": "Algés",
+          "lat": 38.7012,
+          "lng": -9.2297
+        }
+      ]
+    },
+    "lis-train": {
+      "label": "CP",
+      "name": "Suburban train",
+      "colour": "#334155"
+    }
   },
   "services": {
-    "lis-tram": { "hours": [{ "days": [0, 1, 2, 3, 4, 5, 6], "from": "06:00", "to": "23:00" }], "hoursText": "Sample: about 06:00–23:00", "frequency": "Sample: every 10–15 minutes", "sources": ["https://www.carris.pt/en/"] }
+    "lis-tram": {
+      "hours": [
+        {
+          "days": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "from": "06:00",
+          "to": "23:00"
+        }
+      ],
+      "hoursText": "Sample: about 06:00–23:00",
+      "frequency": "Sample: every 10–15 minutes",
+      "sources": [
+        "https://www.carris.pt/en/"
+      ]
+    }
   },
   "routes": {
-    "baixa-castle": { "options": [
-      { "mode": "tram", "label": "Tram", "minutes": [20, 30], "service": "lis-tram", "legs": [
-        { "walk": 300, "minutes": 5, "text": "to the Rua da Conceição stop" },
-        { "line": "lis-28", "direction": "Martim Moniz", "to": "Miradouro de Santa Luzia" },
-        { "walk": 500, "minutes": 10, "text": "uphill to the castle gate" }
-      ], "later": "Sample: trams run all day; queues are shortest before 10:00.", "fare": "Sample fare.", "pay": "Sample: tap a reloadable card when boarding." },
-      { "mode": "taxi", "label": "Taxi", "minutes": [10, 15], "fareShort": "sample fare", "fare": "Sample: metered.", "driverText": "Castelo de São Jorge" }
-    ] },
-    "baixa-belem": { "options": [
-      { "mode": "tram", "label": "Tram", "minutes": [25, 35], "service": "lis-tram", "legs": [
-        { "line": "lis-15", "direction": "Algés", "to": "Mosteiro Jerónimos", "text": "Board at Praça do Comércio" }
-      ], "fare": "Sample fare.", "pay": "Sample: tap a reloadable card when boarding." },
-      { "mode": "taxi", "label": "Taxi", "minutes": [15, 20], "fareShort": "sample fare", "fare": "Sample: metered.", "driverText": "Mosteiro dos Jerónimos" }
-    ] }
+    "baixa-castle": {
+      "options": [
+        {
+          "mode": "tram",
+          "label": "Tram",
+          "minutes": [
+            20,
+            30
+          ],
+          "service": "lis-tram",
+          "legs": [
+            {
+              "walk": 300,
+              "minutes": 5,
+              "text": "to the Rua da Conceição stop"
+            },
+            {
+              "line": "lis-28",
+              "direction": "Martim Moniz",
+              "to": "Miradouro de Santa Luzia",
+              "from": "Rua da Conceição",
+              "stops": 3
+            },
+            {
+              "walk": 500,
+              "minutes": 10,
+              "text": "uphill to the castle gate"
+            }
+          ],
+          "later": "Sample: trams run all day; queues are shortest before 10:00.",
+          "fare": "Sample fare.",
+          "pay": "Sample: tap a reloadable card when boarding."
+        },
+        {
+          "mode": "taxi",
+          "label": "Taxi",
+          "minutes": [
+            10,
+            15
+          ],
+          "fareShort": "sample fare",
+          "fare": "Sample: metered.",
+          "driverText": "Castelo de São Jorge"
+        }
+      ]
+    },
+    "baixa-belem": {
+      "options": [
+        {
+          "mode": "tram",
+          "label": "Tram",
+          "minutes": [
+            25,
+            35
+          ],
+          "service": "lis-tram",
+          "legs": [
+            {
+              "line": "lis-15",
+              "direction": "Algés",
+              "to": "Mosteiro Jerónimos",
+              "text": "Board at Praça do Comércio",
+              "from": "Praça do Comércio",
+              "stops": 5
+            }
+          ],
+          "fare": "Sample fare.",
+          "pay": "Sample: tap a reloadable card when boarding."
+        },
+        {
+          "mode": "taxi",
+          "label": "Taxi",
+          "minutes": [
+            15,
+            20
+          ],
+          "fareShort": "sample fare",
+          "fare": "Sample: metered.",
+          "driverText": "Mosteiro dos Jerónimos"
+        }
+      ]
+    }
   },
   "boards": {
-    "belem-cais": { "title": "Belém → Cais do Sodré (sample)", "date": "2030-06-02", "tabs": [
-      { "label": "To Cais do Sodré", "stations": ["Belém", "Cais do Sodré"], "plan": "15:02", "rows": [
-        { "times": ["14:22", "14:30"] },
-        { "times": ["14:42", "14:50"] },
-        { "times": ["15:02", "15:10"] },
-        { "times": ["15:22", "15:30"] },
-        { "times": ["15:42", "15:50"], "flag": "LAST", "note": "Sample: shows how a flagged train looks." }
-      ] }
-    ], "notes": "Sample timetable for the demo.", "checked": "Sample data, not checked", "sources": [] }
+    "belem-cais": {
+      "title": "Belém → Cais do Sodré (sample)",
+      "date": "2030-06-02",
+      "tabs": [
+        {
+          "label": "To Cais do Sodré",
+          "stations": [
+            "Belém",
+            "Cais do Sodré"
+          ],
+          "plan": "15:02",
+          "rows": [
+            {
+              "times": [
+                "14:22",
+                "14:30"
+              ],
+              "train": "CP 1422",
+              "operator": "cp"
+            },
+            {
+              "times": [
+                "14:42",
+                "14:50"
+              ],
+              "train": "CP 1442",
+              "operator": "cp"
+            },
+            {
+              "times": [
+                "15:02",
+                "15:10"
+              ],
+              "train": "CP 1502",
+              "operator": "cp",
+              "stops": [
+                {
+                  "name": "Belém",
+                  "time": "15:02"
+                },
+                {
+                  "name": "Alcântara-Mar",
+                  "time": "15:05"
+                },
+                {
+                  "name": "Santos",
+                  "time": "15:07"
+                },
+                {
+                  "name": "Cais do Sodré",
+                  "time": "15:10"
+                }
+              ]
+            },
+            {
+              "times": [
+                "15:22",
+                "15:30"
+              ],
+              "train": "CP 1522",
+              "operator": "cp"
+            },
+            {
+              "times": [
+                "15:42",
+                "15:50"
+              ],
+              "flag": "LAST",
+              "note": "Sample: shows how a flagged train looks.",
+              "train": "CP 1542",
+              "operator": "cp"
+            }
+          ]
+        }
+      ],
+      "notes": "Sample timetable for the demo.",
+      "checked": "Sample data, not checked",
+      "sources": [],
+      "buyUrl": "https://www.cp.pt/"
+    }
   }
 }

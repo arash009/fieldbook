@@ -76,3 +76,33 @@ test('loadTripDir explains a missing or broken trip.json', async () => {
   await writeFile(join(dir, 'data/trip.json'), '{ nope');
   await assert.rejects(loadTripDir(dir), /data\/trip.json:/);
 });
+
+test('v2 fields are checked: entries, images, leg placement, live status, cities and tickets', () => {
+  const p = valid();
+  p.guides[0].entry = { booking: 'maybe', buyUrl: 'http://x', bookingId: 'nope' };
+  p.guides[0].images = { hero: { src: 'javascript:1' } };
+  p.transport.lines.l1.stops = [{ name: 'Start', lat: 1, lng: 1 }, { name: 'Museum', lat: 1, lng: 1.01 }, { name: 'North', lat: 1, lng: 1.02 }];
+  p.transport.routes.r1.options[0].legs[0] = { line: 'l1', from: 'Nowhere', to: 'Museum', direction: 'North' };
+  p.transport.liveStatus = { rail: 'ftp://x' };
+  p.trip.cities = { X: { lat: 'a' } };
+  p.private.ticketList = [{ id: 't1', label: 'Ticket', date: 'soon' }];
+  const errors = validatePayload(p).join('\n');
+  for (const needle of ['entry.booking "maybe"', 'buyUrl must start with https://', 'bookingId "nope" not found', 'image src must start with https://', 'can\'t place leg from "Nowhere"', 'liveStatus.rail must be an http(s) URL containing {number}', 'cities.X needs numeric lat and lng', 'ticket "t1": date must be YYYY-MM-DD', 'ticket "t1": file is required']) {
+    assert.ok(errors.includes(needle), `expected an error mentioning ${needle}\n${errors}`);
+  }
+});
+
+test('valid v2 fields pass', () => {
+  const p = valid();
+  p.guides[0].entry = { booking: 'required', buyUrl: 'https://example.com/buy', bookingId: 'b1' };
+  p.guides[0].images = { hero: { src: 'https://upload.wikimedia.org/a/960px-x.jpg', page: 'https://commons.wikimedia.org/wiki/File:x.jpg' }, lookFor: [{ index: 0, src: 'https://upload.wikimedia.org/a/500px-y.jpg' }] };
+  p.guides[0].links = [{ label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/X' }];
+  p.guides[0].video = { label: 'Film', url: 'https://www.youtube.com/watch?v=x', minutes: 5 };
+  p.trip.days[0].stops[1].entry = { booking: 'at-door' };
+  p.transport.lines.l1.stops = [{ name: 'Start', lat: 1, lng: 1 }, { name: 'Museum', lat: 1, lng: 1.01 }, { name: 'North', lat: 1, lng: 1.02 }];
+  p.transport.routes.r1.options[0].legs[0] = { line: 'l1', from: 'Start', to: 'Museum', direction: 'North', stops: 1 };
+  p.transport.liveStatus = { rail: 'http://live.example/{number}', express: 'https://express.example/{number}' };
+  p.trip.cities = { Sample: { lat: 48.85, lng: 2.35 } };
+  p.private.ticketList = [{ id: 't1', label: 'Ticket', date: '2030-06-01', file: 'ticket.pdf', booking: 'b1' }];
+  assert.deepEqual(validatePayload(p), []);
+});
