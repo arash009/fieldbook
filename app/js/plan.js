@@ -104,3 +104,33 @@ export function askContext({ trip, now, ticks, viewing }) {
   if (booked.length) lines.push(`Marked as booked on my phone: ${booked.join('; ')}.`);
   return lines.join('\n');
 }
+
+export const ENTRY_LABEL = { required: 'PRE-BOOK', recommended: 'BOOK AHEAD', 'at-door': 'AT THE DOOR', free: 'FREE' };
+
+export function entryFor(guides, stop) {
+  if (stop.entry) return stop.entry;
+  for (const id of guideIdsOf(stop)) {
+    const g = (guides ?? []).find((x) => x.id === id);
+    if (g?.entry) return g.entry;
+  }
+  return null;
+}
+
+export function entryState(trip, entry, ticks) {
+  const booking = entry.bookingId ? (trip.bookings ?? []).find((b) => b.id === entry.bookingId) ?? null : null;
+  const booked = booking ? bookingDone(booking, ticks) : false;
+  return { booked, booking, kind: booked ? 'booked' : entry.booking, label: booked ? 'BOOKED ✓' : ENTRY_LABEL[entry.booking] ?? entry.booking };
+}
+
+export function ticketFor(tickets, { bookingId, stopId } = {}) {
+  const list = tickets ?? [];
+  return (bookingId && list.find((t) => t.booking === bookingId)) || (stopId && list.find((t) => t.stop === stopId)) || null;
+}
+
+export function liveUrl(transport, train, operator) {
+  const pattern = transport?.liveStatus?.[operator];
+  const number = /(\d{2,5})/.exec(train ?? '')?.[1];
+  if (!pattern || !number) return null;
+  const url = pattern.replace('{number}', number);
+  return /^https?:\/\/[^\s"'<>]+$/.test(url) ? url : null;
+}

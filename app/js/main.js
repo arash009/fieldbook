@@ -1,6 +1,8 @@
 // Boots the app: landing page, demo, a remembered encrypted trip, or a single-file backup.
-import { localNow, parseNowOverride, daysBetween } from './clock.js';
-import { open, openWithKey } from './crypto.js';
+import { localNow, parseNowOverride, daysBetween, addDays } from './clock.js';
+import { forecastUrl, parseForecast } from './weather.js';
+import { open, openWithKey, openBytes } from './crypto.js';
+import { openTicketViewer } from './ticket-viewer.js';
 import { loadKey, saveKey, forgetKey } from './keystore.js';
 import { loadTicks, saveTicks, toggleTick } from './ticks.js';
 import { indexPayload, rebaseDates } from './data.js';
@@ -9,6 +11,7 @@ import { renderApp } from './views/shell.js';
 import { landingView, messageView } from './views/landing.js';
 import { unlockView } from './views/unlock.js';
 import { askText, askUrl } from './views/ask.js';
+import { speechChunks } from './speech.js';
 
 const REMEMBER = 'fieldbook:trip';
 const DEMO = 'fieldbook:demo';
@@ -29,7 +32,7 @@ function now() {
   return parseNowOverride(new URLSearchParams(location.search).get('now')) ?? localNow(S.data.trip.meta.timezone);
 }
 
-const context = () => ({ ...S.data, mode: S.mode, now: now(), ticks: S.ticks, ui: S.ui, route: parseRoute(location.hash) });
+const context = () => ({ ...S.data, mode: S.mode, now: now(), ticks: S.ticks, ui: S.ui, weather: S.weather, route: parseRoute(location.hash) });
 
 function show(content) {
   main.innerHTML = String(content);
@@ -63,13 +66,31 @@ function ready(payload) {
     local.set(key, S.envelope.iv);
   }
   render();
+  loadWeather();
+}
+
+async function loadWeather() {
+  const trip = S.data.trip;
+  const cities = trip.cities ?? {};
+  const today = now().date;
+  const S16 = addDays(today, 15);
+  S.weather = S.weather ?? {};
+  for (const [name, city] of Object.entries(cities)) {
+    const dates = trip.days.filter((d) => d.city === name && d.date >= today && d.date <= S16).map((d) => d.date);
+    if (!dates.length) continue;
+    try {
+      const res = await fetch(forecastUrl(city, trip.meta.timezone, dates[0], dates.at(-1)));
+      if (res.ok) Object.assign(S.weather, parseForecast(await res.json()));
+    } catch { /* no forecast: header shows none */ }
+  }
+  render();
 }
 
 async function unlockFlow(envelope) {
   S.envelope = envelope;
   const stored = await loadKey(S.tripId);
   if (stored && stored.salt === envelope.salt) {
-    try { ready(await openWithKey(envelope, stored.key)); return; } catch { /* the passphrase changed: ask again */ }
+    try { const data = await openWithKey(envelope, stored.key); S.key = stored.key; ready(data); return; } catch { /* the passphrase changed: ask again */ }
   }
   show(unlockView());
   main.querySelector('input')?.focus();
@@ -81,6 +102,7 @@ async function submitUnlock(form) {
   try {
     const { key, data } = await open(S.envelope, pass);
     await saveKey(S.tripId, key, S.envelope.salt);
+    S.key = key;
     ready(data);
   } catch {
     show(unlockView({ error: "That passphrase didn't work." }));
@@ -177,6 +199,90 @@ const ACTIONS = {
   'leave-demo': () => { session.del(DEMO); location.hash = ''; location.reload(); },
 };
 
+function stopSpeech() { if (globalThis.speechSynthesis) speechSynthesis.cancel(); S.ui.speaking = null; S.ui.paused = false; }
+ACTIONS.listen = (el) => {
+  const synth = globalThis.speechSynthesis;
+  if (!synth) return;
+  if (S.ui.speaking === el.dataset.id) {
+    if (synth.paused) synth.resume(); else synth.pause();
+    S.ui.paused = synth.paused; render(); return;
+  }
+  stopSpeech();
+  const g = S.data.guides.find((x) => x.id === el.dataset.id);
+  const voice = synth.getVoices().find((v) => v.lang === 'en-GB') ?? synth.getVoices().find((v) => v.lang.startsWith('en'));
+  const chunks = speechChunks(g);
+  chunks.forEach((text, i) => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB'; if (voice) u.voice = voice; u.rate = 0.95;
+    if (i === chunks.length - 1) u.onend = () => { S.ui.speaking = null; render(); };
+    synth.speak(u);
+  });
+  S.ui.speaking = g.id; S.ui.paused = false; render();
+};
+
+let watchId = null;
+let lastPos = null;
+function gpsOff(error) {
+  if (watchId != null) navigator.geolocation.clearWatch(watchId);
+  watchId = null; lastPos = null;
+  S.ui.gps = error ? { on: false, error } : { on: false };
+  render();
+}
+ACTIONS.gps = () => {
+  if (S.ui.gps?.on) { gpsOff(); return; }
+  if (!navigator.geolocation) { gpsOff('This phone has no location service.'); return; }
+  S.ui.gps = { on: true };
+  render();
+  watchId = navigator.geolocation.watchPosition((p) => {
+    const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
+    const moved = !lastPos || Math.abs(pos.lat - lastPos.lat) + Math.abs(pos.lng - lastPos.lng) > 0.0003;
+    if (!moved) return;
+    lastPos = pos;
+    S.ui.gps = { on: true, pos };
+    render();
+  }, (e) => {
+    // Only a refusal stops the watch. No fix yet (underground, a timeout) keeps watching: the strip shows
+    // "Finding you…", or the last position if there was one.
+    if (e.code === 1) gpsOff('Location is blocked for this site. Allow it in Chrome settings to use Where am I?');
+  }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+};
+
+async function fetchTicket(t) {
+  const res = await fetch(t.plain ? t.file : `trips/${t.file}`, { cache: 'no-cache' });
+  if (!res.ok) throw Object.assign(new Error(String(res.status)), { status: res.status });
+  return t.plain ? new Uint8Array(await res.arrayBuffer()) : openBytes(await res.json(), S.key);
+}
+
+// The trip was redeployed since this page loaded and the ticket moved: reload the trip with the saved key.
+async function refreshTrip() {
+  try {
+    const res = await fetch(`trips/${S.tripId}.enc`, { cache: 'no-cache' });
+    if (!res.ok) return false;
+    const envelope = await res.json();
+    const data = await openWithKey(envelope, S.key);
+    S.envelope = envelope;
+    S.data = indexPayload(data);
+    render();
+    return true;
+  } catch { return false; }
+}
+
+ACTIONS.ticket = (el) => {
+  const t = (S.data.private.tickets ?? []).find((x) => x.id === el.dataset.id);
+  if (!t) return;
+  if (S.mode === 'file') { toast('Tickets open in the online app.'); return; }
+  openTicketViewer({ ticket: t, load: async () => {
+    try {
+      return await fetchTicket(t);
+    } catch (e) {
+      if (e.status !== 404 || t.plain || !(await refreshTrip())) throw e;
+      const fresh = (S.data.private.tickets ?? []).find((x) => x.id === t.id);
+      if (!fresh) throw e;
+      return fetchTicket(fresh);
+    }
+  } });
+};
+
 document.addEventListener('click', (event) => {
   const el = event.target.closest('[data-action]');
   if (el && ACTIONS[el.dataset.action]) ACTIONS[el.dataset.action](el);
@@ -199,11 +305,14 @@ window.addEventListener('hashchange', () => {
   if (parseSpecialHash(location.hash)) { boot(); return; }
   S.ui.ask = null;
   S.ui.driver = null;
-  render();
+  stopSpeech();
+  if (S.ui.gps && parseRoute(location.hash).name !== 'stop') gpsOff(); // gpsOff renders
+  else render();
   window.scrollTo(0, 0);
 });
 
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
 setInterval(() => { if (S.data && !S.ui.ask && document.visibilityState === 'visible') render(); }, 30000);
+setInterval(() => { if (S.data) loadWeather(); }, 3600000);
 
 boot();

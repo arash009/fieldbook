@@ -47,3 +47,13 @@ export async function open(envelope, passphrase) {
   const key = await deriveKey(passphrase, fromBase64(envelope.salt), envelope.iterations);
   return { key, data: await openWithKey(envelope, key) };
 }
+
+export async function sealBytes(bytes, key) {
+  const iv = randomBytes(12);
+  const ct = new Uint8Array(await subtle().encrypt({ name: 'AES-GCM', iv }, key, bytes));
+  return { fieldbook: 1, kind: 'file', iv: toBase64(iv), data: toBase64(ct) };
+}
+
+export async function openBytes(envelope, key) {
+  return new Uint8Array(await subtle().decrypt({ name: 'AES-GCM', iv: fromBase64(envelope.iv) }, key, fromBase64(envelope.data)));
+}

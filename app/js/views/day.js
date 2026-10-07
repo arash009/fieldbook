@@ -1,7 +1,8 @@
 // Today and any single day: alerts, the "next" card with leaving-now estimates, and the stop list.
 import { html, mapsUrl } from '../html.js';
 import { formatDay, toMinutes, tripPhase, daysBetween } from '../clock.js';
-import { nextStop, stopAfter, stopState, stopTickId, leavingNow, activeAlerts, findDining, filterBookings, boardRows } from '../plan.js';
+import { nextStop, stopAfter, stopState, stopTickId, leavingNow, activeAlerts, findDining, filterBookings, boardRows, entryFor } from '../plan.js';
+import { entryBadge } from './entry.js';
 import { tile, routeChips, alertBanner, paceBox, short, mapButton, notFound } from './parts.js';
 import { askButton } from './ask.js';
 
@@ -25,7 +26,8 @@ function dayScreen(ctx, day) {
   const pace = paceBox(trip);
   return html`<header class="top"><div class="row"><div>
       <div class="date">${formatDay(day.date)} · ${day.city} · Day ${idx + 1} of ${trip.days.length}</div>
-      <h1>${day.title}</h1></div>${askButton(ctx)}</div></header>
+      <h1>${day.title}</h1>
+  ${ctx.weather?.[day.date] ? (() => { const w = ctx.weather[day.date]; return html`<div class="wx"><span aria-hidden="true">${w.icon}</span> ${w.text} · ${w.max}° / ${w.min}°${w.rain != null ? ` · ${w.rain}% rain` : ''}${w.sunset ? ` · sunset ${w.sunset}` : ''}</div>`; })() : ''}</div>${askButton(ctx)}</div></header>
     <div class="body">
       ${activeAlerts(trip.alerts, now).map((a) => alertBanner(a, now))}
       ${pace && !ticks.has(`pace:${day.date}`) ? html`<div class="pace-once">${pace}<button class="btn small" type="button" data-action="tick" data-id="pace:${day.date}">Got it</button></div>` : ''}
@@ -70,11 +72,12 @@ export function stopRow(ctx, day, stop, isNext) {
   const state = stopState(day, stop, ctx.now, ctx.ticks);
   const dining = stop.dining ? findDining(ctx.trip, stop.dining) : null;
   const done = state === 'done';
+  const entry = stop.type === 'sight' ? entryFor(ctx.guides, stop) : null;
   return html`<li class="stop ${state}${isNext ? ' is-next' : ''}">
     <button class="tick" type="button" data-action="tick" data-id="${stopTickId(stop)}" aria-pressed="${done}" aria-label="${done ? 'Mark not done' : 'Mark done'}: ${stop.title}">${tile(ctx, stop, done)}</button>
     <a class="stop-main" href="#/stop/${stop.id}">
       <span class="tm${stop.timeLabel ? ' label' : ''}">${stop.timeLabel ?? stop.time}</span>
-      <span class="x"><span class="h">${stop.title}${stop.optional ? html` <span class="opt">optional</span>` : ''}</span>
+      <span class="x"><span class="h">${stop.title}${stop.optional ? html` <span class="opt">optional</span>` : ''}${entry ? html` ${entryBadge(ctx, entry)}` : ''}</span>
         ${dining?.badge ? html`<span class="chip diet">${dining.badge}</span>` : stop.notes ? html`<span class="n">${short(stop.notes)}</span>` : ''}</span>
     </a>
     ${stop.maps ? html`<a class="map" href="${mapsUrl(stop.maps)}" target="_blank" rel="noopener" aria-label="Map: ${stop.title}">📍</a>` : ''}

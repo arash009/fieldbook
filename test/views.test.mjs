@@ -15,6 +15,8 @@ import { infoView, infoCardView, infoCards } from '../app/js/views/info.js';
 import { renderApp } from '../app/js/views/shell.js';
 import { landingView } from '../app/js/views/landing.js';
 import { unlockView } from '../app/js/views/unlock.js';
+import { entryCard, entryBadge } from '../app/js/views/entry.js';
+import { lineStrip } from '../app/js/views/strip.js';
 
 const demo = indexPayload(await loadTripDir(fileURLToPath(new URL('../demo/', import.meta.url))));
 const ctxAt = (date, time, hash = '#/today', extra = {}) => ({
@@ -69,7 +71,8 @@ test('ask text and url', () => {
 
 test('stop detail: route tabs, taxi tab, board, meal and stay panels', () => {
   const route = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle')));
-  assert.match(route, /<b>Direction Martim Moniz<\/b> to <b>Miradouro de Santa Luzia<\/b>/);
+  assert.match(route, /<b>Direction Martim Moniz<\/b> · 3 stops[\s\S]*Rua da Conceição[\s\S]*BOARD[\s\S]*Miradouro de Santa Luzia[\s\S]*GET OFF/);
+  assert.match(route, /Tram 28 map ›/);
   assert.match(route, /Going later\?/);
   const taxi = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle', { ui: { tabs: { 'route:d1-tram-castle': 1 } } })));
   assert.match(taxi, /Show the driver/);
@@ -133,4 +136,127 @@ test('the demo still links meals, boards and days after its dates are moved to t
   const ctx = { ...moved, mode: 'demo', now: makeLocal(day1, '09:00'), ticks: new Set(), ui: { tabs: {} }, route: parseRoute('#/stop/d1-lunch') };
   assert.match(String(stopView(ctx)), /Sou vegetariano/);
   assert.match(String(todayView({ ...ctx, route: parseRoute('#/today') })), /Leaving now/);
+});
+
+test('entry card: badge, buy link, booked state and ticket button', () => {
+  const ctx = ctxAt('2030-06-01', '09:00');
+  const entry = { booking: 'required', bookingId: 'castle', summary: 'Book a slot.', buyUrl: 'https://castelodesaojorge.pt/en/', prices: 'Adults €15', hours: '09:00–21:00', sources: [], checked: '2030-05-01' };
+  const card = String(entryCard(ctx, entry, null));
+  assert.match(card, /PRE-BOOK/);
+  assert.match(card, /href="https:\/\/castelodesaojorge\.pt\/en\/"[^>]*>Buy tickets ›/);
+  const booked = String(entryCard({ ...ctx, ticks: new Set(['booking:castle']) }, entry, { id: 't1' }));
+  assert.match(booked, /BOOKED ✓/);
+  assert.match(booked, /data-action="ticket" data-id="t1"/);
+  assert.equal(String(entryBadge(ctx, null)), '');
+});
+
+test('the Tickets tab replaces Book and booking rows show a buy button', () => {
+  const out = renderApp(ctxAt('2030-05-30', '09:00', '#/bookings'));
+  assert.match(String(out.nav), /Tickets/);
+  assert.match(String(out.main), /class="btn small"[^>]*href="https:\/\/castelodesaojorge\.pt\/en\/"|href="https:\/\/castelodesaojorge\.pt\/en\/"[^>]*class="btn small"/);
+});
+
+test('guide page shows the photo with its credit, read-more links and Listen', () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/guide/belem-tower');
+  const g = ctx.guides.find((x) => x.id === 'belem-tower');
+  const withMedia = { ...g, images: { hero: { src: 'https://upload.wikimedia.org/x/960px-Tower.jpg', page: 'https://commons.wikimedia.org/wiki/File:Tower.jpg', alt: 'The tower', credit: 'A. Person', licence: 'CC BY-SA 4.0' }, lookFor: [{ index: 0, src: 'https://upload.wikimedia.org/x/500px-Rhino.jpg', page: 'https://commons.wikimedia.org/wiki/File:Rhino.jpg', alt: 'Rhino', credit: 'B', licence: 'CC0' }] }, links: [{ label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Bel%C3%A9m_Tower' }], video: { label: 'Short film', url: 'https://www.youtube.com/watch?v=x', minutes: 5 } };
+  globalThis.speechSynthesis = {};
+  const out = String(guideView({ ...ctx, guides: ctx.guides.map((x) => (x.id === g.id ? withMedia : x)) }));
+  delete globalThis.speechSynthesis;
+  assert.match(out, /<img[^>]+src="https:\/\/upload\.wikimedia\.org\/x\/960px-Tower\.jpg"[^>]+loading="lazy"/);
+  assert.match(out, /A\. Person · CC BY-SA 4\.0/);
+  assert.match(out, /500px-Rhino\.jpg/);
+  assert.match(out, /Read more/);
+  assert.match(out, /Short film · 5 min/);
+  assert.match(out, /data-action="listen" data-id="belem-tower"/);
+});
+
+const stripCtx = () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle');
+  ctx.transport = { ...ctx.transport, lines: { ...ctx.transport.lines, 'lis-28': { ...ctx.transport.lines['lis-28'], mapUrl: 'https://www.carris.pt/en/', stops: [
+    { name: 'Martim Moniz', lat: 38.7158, lng: -9.1359 }, { name: 'Rua da Conceição', lat: 38.7105, lng: -9.1368 }, { name: 'Sé', lat: 38.7099, lng: -9.1327 },
+    { name: 'Miradouro de Santa Luzia', lat: 38.7118, lng: -9.1300 }] } } };
+  return ctx;
+};
+
+test('a tram leg with from/to/direction draws a strip with board and get-off stops', () => {
+  const ctx = stripCtx();
+  const out = String(lineStrip(ctx, { line: 'lis-28', from: 'Rua da Conceição', to: 'Miradouro de Santa Luzia', direction: 'Miradouro de Santa Luzia' }, {}));
+  assert.match(out, /Rua da Conceição[\s\S]*BOARD[\s\S]*Sé[\s\S]*Miradouro de Santa Luzia[\s\S]*GET OFF/);
+  assert.match(out, /2 stops/);
+  const near = String(lineStrip({ ...ctx, ui: { tabs: {}, gps: { on: true, pos: { lat: 38.7100, lng: -9.1328 } } } }, { line: 'lis-28', from: 'Rua da Conceição', to: 'Miradouro de Santa Luzia', direction: 'Miradouro de Santa Luzia' }, {}));
+  assert.match(near, /YOU'RE HERE/);
+  assert.match(near, /1 stop to Miradouro de Santa Luzia/);
+  assert.equal(lineStrip(ctx, { line: 'lis-28', to: 'Sé', direction: 'Sé' }, {}), null);
+});
+
+test('boards link each train to its live status and show calls-at for the plan', () => {
+  const ctx = ctxAt('2030-06-02', '14:00', '#/stop/d2-train');
+  const b = ctx.transport.boards['belem-cais'];
+  ctx.transport = { ...ctx.transport, liveStatus: { rail: 'https://live.example/{number}' }, boards: { ...ctx.transport.boards, 'belem-cais': { ...b, buyUrl: 'https://www.cp.pt/', tabs: [{ ...b.tabs[0], rows: b.tabs[0].rows.map((r) => ({ ...r, train: `CP ${r.times[0].replace(':', '')}`, operator: 'rail', ...(r.times[0] === '15:02' ? { stops: [{ name: 'Belém', time: '15:02' }, { name: 'Cais do Sodré', time: '15:10' }] } : {}) })) }] } } };
+  const out = String(stopView(ctx));
+  assert.match(out, /href="https:\/\/live\.example\/1502"[^>]*>Live status ›/);
+  assert.match(out, /href="https:\/\/www\.cp\.pt\/"[^>]*>Buy ticket ›/);
+  assert.match(out, /Calls at/);
+  assert.match(out, /href="https:\/\/live\.example\/1422"/);
+});
+
+test('a board row names its train once, even when the note already gives the number', () => {
+  const ctx = ctxAt('2030-06-02', '14:00', '#/stop/d2-train');
+  const b = ctx.transport.boards['belem-cais'];
+  const rows = b.tabs[0].rows.map((r) => (r.times[0] === '14:22' ? { ...r, train: 'CP 1422', note: 'Sample: service 1422' } : r.times[0] === '14:42' ? { ...r, train: 'CP 1442' } : r));
+  ctx.transport = { ...ctx.transport, boards: { ...ctx.transport.boards, 'belem-cais': { ...b, tabs: [{ ...b.tabs[0], rows }] } } };
+  const out = String(stopView(ctx));
+  assert.doesNotMatch(out, /CP 1422/);
+  assert.match(out, /CP 1442/);
+});
+
+test('the day header shows the forecast when there is one', () => {
+  const weather = { '2030-06-01': { icon: '☀', text: 'Clear', max: 24, min: 16, rain: 10, sunset: '21:05' } };
+  assert.match(String(dayView(ctxAt('2030-06-01', '09:00', '#/day/2030-06-01', { weather }))), /Clear · 24° \/ 16° · 10% rain · sunset 21:05/);
+  assert.doesNotMatch(String(dayView(ctxAt('2030-06-01', '09:00', '#/day/2030-06-02', { weather }))), /class="wx"/);
+});
+
+test('the Tickets tab lists tickets with today first', () => {
+  const ctx = ctxAt('2030-06-02', '09:00', '#/bookings');
+  ctx.private = { ...ctx.private, tickets: [{ id: 'a', label: 'Castle', date: '2030-06-01', mime: 'image/png' }, { id: 'b', label: 'Monastery', date: '2030-06-02', mime: 'application/pdf' }] };
+  const out = String(renderApp(ctx).main);
+  assert.ok(out.indexOf('Monastery') < out.indexOf('Castle'));
+  assert.match(out, /data-action="ticket" data-id="b"/);
+});
+
+test('Where am I? says once when it is still finding you, and per line when you are far from it', () => {
+  const waiting = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle', { ui: { tabs: {}, gps: { on: true } } })));
+  assert.equal((waiting.match(/Finding you/g) ?? []).length, 1);
+  const ctx = stripCtx();
+  const leg = { line: 'lis-28', from: 'Rua da Conceição', to: 'Miradouro de Santa Luzia', direction: 'Miradouro de Santa Luzia' };
+  const far = String(lineStrip({ ...ctx, ui: { tabs: {}, gps: { on: true, pos: { lat: 40.4168, lng: -3.7038 } } } }, leg, {}));
+  assert.match(far, /not near this line/);
+  assert.doesNotMatch(far, /YOU'RE HERE/);
+  assert.doesNotMatch(String(lineStrip(ctx, leg, {})), /gps-note/);
+});
+
+test('guide photos are requested with CORS, so the photo cache can tell a failed response from a good one', () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/guide/belem-tower');
+  const g = ctx.guides.find((x) => x.id === 'belem-tower');
+  const withMedia = { ...g, lookFor: ['A rhino.'], images: { hero: { src: 'https://upload.wikimedia.org/x/960px-T.jpg', page: 'https://commons.wikimedia.org/wiki/File:T.jpg', alt: 'T', credit: 'A', licence: 'CC0' }, lookFor: [{ index: 0, src: 'https://upload.wikimedia.org/x/500px-R.jpg', alt: 'R', credit: 'B', licence: 'CC0' }] } };
+  const out = String(guideView({ ...ctx, guides: ctx.guides.map((x) => (x.id === g.id ? withMedia : x)) }));
+  assert.equal((out.match(/<img[^>]+crossorigin="anonymous"/g) ?? []).length, 2);
+});
+
+test('a ride that cannot be placed on its line falls back to the text leg, with no strip or GPS switch', () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle');
+  const route = ctx.transport.routes['baixa-castle'];
+  for (const bad of [{ from: 'Nowhere' }, { direction: 'Prazeres' }, { from: 'Miradouro de Santa Luzia', to: 'Rua da Conceição' }]) {
+    const legs = route.options[0].legs.map((l) => (l.line ? { ...l, ...bad } : l));
+    const c = { ...ctx, transport: { ...ctx.transport, routes: { ...ctx.transport.routes, 'baixa-castle': { ...route, options: [{ ...route.options[0], legs }, ...route.options.slice(1)] } } } };
+    const out = String(stopView(c));
+    assert.doesNotMatch(out, /class="strip"/, JSON.stringify(bad));
+    assert.doesNotMatch(out, /data-action="gps"/, JSON.stringify(bad));
+    assert.match(out, /<b>Direction [^<]+<\/b>, 3 stops to <b>/, JSON.stringify(bad));
+  }
+});
+
+test('the guide has no Listen button when the browser has no speech', () => {
+  assert.doesNotMatch(String(guideView(ctxAt('2030-06-01', '09:00', '#/guide/castle'))), /data-action="listen"/);
 });

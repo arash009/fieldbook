@@ -5,10 +5,11 @@
 [Try the live demo](https://arash009.github.io/fieldbook/#demo) (a sample weekend in Lisbon; it starts today, so "next" and "leaving now?" are live).
 
 <p>
-  <img src="docs/screenshots/today.png" width="200" alt="Today: the next stop with tram and taxi options and leaving-now arrival times">
-  <img src="docs/screenshots/transport.png" width="200" alt="Transport detail: step-by-step route, later times and fares">
+  <img src="docs/screenshots/today.png" width="200" alt="Today: the forecast, the next stop with tram and taxi options and leaving-now arrival times">
+  <img src="docs/screenshots/transport.png" width="200" alt="A tram ride drawn as a strip of stops, with Where am I? marking the nearest stop">
+  <img src="docs/screenshots/guide.png" width="200" alt="Pocket guide page with a Commons photo, Listen, and the Getting in card">
+  <img src="docs/screenshots/tickets.png" width="200" alt="Tickets: the wallet above the bookings still to make, with buy buttons">
   <img src="docs/screenshots/meal.png" width="200" alt="Meal card: diet setup, hours, a phrase to show staff">
-  <img src="docs/screenshots/guide.png" width="200" alt="Pocket guide page with things to look for and questions for kids">
 </p>
 
 ## Why
@@ -19,9 +20,13 @@ Fieldbook puts the plan in one place that opens instantly and keeps working offl
 ## What it does
 - **Today**: opens on the current day in the *trip's* time zone, even if the phone hasn't switched. It shows the next stop and an estimate for every way of getting there. Arrival windows are flagged when you'd miss the following stop, and an option is marked when it isn't running.
 - **Transport options and later times**: metro, tram and taxi side by side, step by step, with running hours, frequency, the latest time to leave, fares and how to pay. Timetabled trains appear on a departure board with the planned train highlighted and later ones listed, because plans slip on holiday.
+- **Lines you can follow**: each metro or tram ride is drawn as a strip of every stop from boarding to getting off. **Where am I?** uses GPS to mark the nearest stop and count the stops left; the position never leaves the phone.
+- **Trains**: a **Live status** link per train number, a buy link, and the stops the planned train calls at.
+- **Getting in**: each sight says whether to pre-book or buy at the door (PRE-BOOK, BOOK AHEAD, AT THE DOOR, FREE, then BOOKED ✓), what the group pays, hours, rules and step-free access, with a link to the official seller only.
+- **Tickets**: a wallet for the tickets themselves. PDFs and images are encrypted file by file and shown full screen in the app, with PDFs drawn by PDF.js. Below them, everything still to book, soonest deadline first, ticked off on the phone.
 - **Meals**: each planned meal shows how the place caters for the group's diet, that day's opening hours and whether to book. It also has a phrase to show staff in the local language, and nearby backups.
-- **Bookings**: soonest deadline first, ticked off on the phone.
-- **Pocket guide**: for each place, why it matters, what to look for, sourced facts and questions for children.
+- **Pocket guide**: for each place, a photo from Wikimedia Commons with its credit, why it matters, what to look for, sourced facts, questions for children and "Read more" links. **Listen** reads it aloud with the phone's own voice.
+- **Weather**: each day's forecast for its city, from Open-Meteo.
 - **Ask Claude**: one tap copies the context (local time, the day, the next stop, what you're looking at) with your question and opens your Claude project.
 - **Built for outdoors**: black on white, heavy type, big tap targets. It installs to the home screen.
 
@@ -54,7 +59,8 @@ The format is documented field by field in [docs/itinerary-format.md](docs/itine
 ## How it's built
 - Plain JavaScript modules with **no framework and no dependencies**, not even dev ones. A 35-line bundler wires the modules into one file, so the app can also ship as a single self-contained HTML backup.
 - A service worker for offline use; Node 22 built-ins for the CLI (WebCrypto, `zlib` for the icons, `http` for the local server).
-- **57 tests** on Node's built-in test runner. They cover time-zone handling, the "next stop" and "leaving now?" logic, bookings, the board, the encryption round-trip, validation, the bundler, the build, deploys to a local git remote, and every screen rendered against the demo, including HTML escaping.
+- **83 tests** on Node's built-in test runner. They cover time-zone handling, the "next stop" and "leaving now?" logic, bookings and getting-in badges, the board and live links, line strips and the nearest-stop maths, the forecast mapping, speech chunks, the encryption round-trip for trips and ticket files, validation, the bundler, the build, deploys to a local git remote, and every screen rendered against the demo, including HTML escaping.
+- PDF.js is the one outside script: loaded from cdnjs only to show a PDF ticket, pinned to one version and checked against its integrity hash.
 - CI runs the tests on every push.
 
 ## Built with AI

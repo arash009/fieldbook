@@ -7,8 +7,8 @@ export function indexPayload(payload) {
   return {
     trip: payload.trip,
     guides: payload.guides ?? [],
-    transport: { checked: t.checked, routes: t.routes ?? {}, services: t.services ?? {}, lines: t.lines ?? {}, boards },
-    private: { stays: payload.private?.stays ?? {}, config: payload.private?.config ?? {} },
+    transport: { checked: t.checked, routes: t.routes ?? {}, services: t.services ?? {}, lines: t.lines ?? {}, boards, liveStatus: t.liveStatus ?? {} },
+    private: { stays: payload.private?.stays ?? {}, config: payload.private?.config ?? {}, tickets: payload.private?.tickets ?? [] },
   };
 }
 

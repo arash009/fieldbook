@@ -1,10 +1,15 @@
 // Checks an itinerary payload. Returns a list of plain-English problems; an empty list means it's valid.
+import { legStops } from '../../app/js/lines.js';
+
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 const HEX = /^#[0-9a-f]{6}$/i;
 export const STOP_TYPES = ['transport', 'sight', 'meal', 'rest', 'logistics'];
 export const BOOKING_STATUSES = ['booked', 'todo', 'unconfirmed', 'unknown', 'optional', 'on-the-day'];
 export const MODES = ['metro', 'tram', 'train', 'bus', 'ferry', 'taxi', 'walk'];
+export const ENTRY_BOOKINGS = ['required', 'recommended', 'at-door', 'free'];
+const HTTPS = /^https:\/\/[^\s"'<>]+$/;
+const HTTP_ANY = /^https?:\/\/[^\s"'<>]+$/;
 export const SECTIONS = ['transfer', 'transfers', 'localTransport', 'dining', 'diningExtras', 'boards', 'tips', 'stays', 'links', 'flights', 'travellers'];
 
 function uniqueIds(list, where, err) {
@@ -17,8 +22,26 @@ function uniqueIds(list, where, err) {
   return ids;
 }
 
+function checkEntry(entry, where, bookingIds, err) {
+  if (!ENTRY_BOOKINGS.includes(entry.booking)) err(`${where}: entry.booking "${entry.booking}" is not one of ${ENTRY_BOOKINGS.join(', ')}`);
+  if (entry.buyUrl != null && !HTTPS.test(entry.buyUrl)) err(`${where}: entry.buyUrl must start with https://`);
+  if (entry.bookingId != null && !bookingIds.has(entry.bookingId)) err(`${where}: entry.bookingId "${entry.bookingId}" not found in bookings`);
+}
+
+function checkGuideMedia(g, where, err) {
+  for (const img of [g.images?.hero, ...(g.images?.lookFor ?? [])].filter(Boolean)) {
+    if (!HTTPS.test(img.src ?? '')) err(`${where}: image src must start with https://`);
+    if (img.page != null && !HTTPS.test(img.page)) err(`${where}: image page must start with https://`);
+  }
+  for (const l of g.links ?? []) if (!l.label || !HTTPS.test(l.url ?? '')) err(`${where}: each link needs a label and a url starting with https://`);
+  if (g.video && !HTTPS.test(g.video.url ?? '')) err(`${where}: video url must start with https://`);
+}
+
 function checkTransport(transport, err) {
-  const { lines = {}, services = {}, routes = {}, boards = {} } = transport ?? {};
+  const { lines = {}, services = {}, routes = {}, boards = {}, liveStatus = {} } = transport ?? {};
+  for (const [op, url] of Object.entries(liveStatus)) {
+    if (typeof url !== 'string' || !HTTP_ANY.test(url) || !url.includes('{number}')) err(`liveStatus.${op} must be an http(s) URL containing {number}`);
+  }
   for (const [id, l] of Object.entries(lines)) {
     if (!l.label) err(`line "${id}": label is required`);
     if (!HEX.test(l.colour ?? '')) err(`line "${id}": colour must be #rrggbb`);
@@ -35,7 +58,10 @@ function checkTransport(transport, err) {
       if (!o.label) err(`${w}: label is required`);
       if (!Array.isArray(o.minutes) || o.minutes.length !== 2 || !(o.minutes[0] <= o.minutes[1])) err(`${w}: minutes must be [min, max]`);
       if (o.service && !services[o.service]) err(`${w}: service "${o.service}" not found`);
-      for (const leg of o.legs ?? []) if (leg.line && !lines[leg.line]) err(`${w}: line "${leg.line}" not found`);
+      for (const leg of o.legs ?? []) {
+        if (leg.line && !lines[leg.line]) err(`${w}: line "${leg.line}" not found`);
+        else if (leg.line && leg.from && lines[leg.line].stops?.length && !legStops(lines[leg.line], leg)) err(`${w}: can't place leg from "${leg.from}" to "${leg.to}" toward "${leg.direction}" on line "${leg.line}"`);
+      }
     });
   }
   for (const [id, b] of Object.entries(boards)) {
@@ -69,6 +95,7 @@ function checkStop(s, where, refs, err) {
   if (s.board && !refs.boards[s.board]) err(`${where}: board "${s.board}" not found`);
   else if (s.board && s.boardTab != null && !refs.boards[s.board].tabs?.[s.boardTab]) err(`${where}: boardTab ${s.boardTab} not found`);
   if (s.stay && !refs.stayIds.has(s.stay)) err(`${where}: stay "${s.stay}" not found`);
+  if (s.entry) checkEntry(s.entry, where, refs.bookingIds, err);
 }
 
 export function validatePayload(payload) {
@@ -85,7 +112,20 @@ export function validatePayload(payload) {
 
   const guides = Array.isArray(payload.guides) ? payload.guides : [];
   const guideIds = uniqueIds(guides, 'guides', err);
-  for (const g of guides) if (!g.title || !g.why) err(`guide "${g.id}": title and why are required`);
+  const bookingIds = new Set((trip.bookings ?? []).map((b) => b.id));
+  for (const g of guides) {
+    if (!g.title || !g.why) err(`guide "${g.id}": title and why are required`);
+    if (g.entry) checkEntry(g.entry, `guide "${g.id}"`, bookingIds, err);
+    checkGuideMedia(g, `guide "${g.id}"`, err);
+  }
+  for (const [name, c] of Object.entries(trip.cities ?? {})) if (typeof c?.lat !== 'number' || typeof c?.lng !== 'number') err(`cities.${name} needs numeric lat and lng`);
+  for (const t of payload.private?.ticketList ?? []) {
+    const w = `ticket "${t.id ?? '?'}"`;
+    if (!t.id || !t.label) err(`${w}: id and label are required`);
+    if (!DATE.test(t.date ?? '')) err(`${w}: date must be YYYY-MM-DD`);
+    if (!t.file) err(`${w}: file is required`);
+    if (t.booking != null && !bookingIds.has(t.booking)) err(`${w}: booking "${t.booking}" not found`);
+  }
 
   const { routes, boards } = checkTransport(payload.transport, err);
   const stayIds = uniqueIds(trip.stays ?? [], 'stays', err);
@@ -97,7 +137,7 @@ export function validatePayload(payload) {
     if (!d.place) err(`dining "${key}": place is required`);
   }
 
-  const refs = { stopIds: new Set(), guideIds, diningKeys, routes, boards, stayIds };
+  const refs = { stopIds: new Set(), guideIds, diningKeys, routes, boards, stayIds, bookingIds };
   (trip.days ?? []).forEach((day, i) => {
     const w = `days[${i}]`;
     if (!DATE.test(day.date ?? '')) err(`${w}: date must be YYYY-MM-DD`);
