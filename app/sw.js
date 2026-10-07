@@ -2,6 +2,7 @@
 const VERSION = '__VERSION__';
 const SHELL = `fieldbook-shell-${VERSION}`;
 const TRIPS = 'fieldbook-trips';
+const PHOTOS = 'fieldbook-photos';
 const ASSETS = ['./', './index.html', './app.js', './app.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './demo/trip.json'];
 
 self.addEventListener('install', (event) => {
@@ -27,8 +28,24 @@ async function networkFirst(request) {
   }
 }
 
+async function photo(request) {
+  const cache = await caches.open(PHOTOS);
+  const hit = await cache.match(request);
+  if (hit) return hit;
+  const res = await fetch(request);
+  if (res.ok || res.type === 'opaque') {
+    try {
+      await cache.put(request, res.clone());
+      const keys = await cache.keys();
+      for (const k of keys.slice(0, Math.max(0, keys.length - 150))) await cache.delete(k);
+    } catch { /* storage full: the photo still shows, it just isn't kept */ }
+  }
+  return res;
+}
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  if (event.request.method === 'GET' && url.hostname === 'upload.wikimedia.org') { event.respondWith(photo(event.request)); return; }
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   if (url.pathname.includes('/trips/')) { event.respondWith(networkFirst(event.request)); return; }
   event.respondWith(caches.match(event.request, { ignoreSearch: true }).then((hit) => hit ?? fetch(event.request)));

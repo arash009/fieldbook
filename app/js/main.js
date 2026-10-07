@@ -9,6 +9,7 @@ import { renderApp } from './views/shell.js';
 import { landingView, messageView } from './views/landing.js';
 import { unlockView } from './views/unlock.js';
 import { askText, askUrl } from './views/ask.js';
+import { speechChunks } from './speech.js';
 
 const REMEMBER = 'fieldbook:trip';
 const DEMO = 'fieldbook:demo';
@@ -177,6 +178,27 @@ const ACTIONS = {
   'leave-demo': () => { session.del(DEMO); location.hash = ''; location.reload(); },
 };
 
+function stopSpeech() { if (globalThis.speechSynthesis) speechSynthesis.cancel(); S.ui.speaking = null; S.ui.paused = false; }
+ACTIONS.listen = (el) => {
+  const synth = globalThis.speechSynthesis;
+  if (!synth) return;
+  if (S.ui.speaking === el.dataset.id) {
+    if (synth.paused) synth.resume(); else synth.pause();
+    S.ui.paused = synth.paused; render(); return;
+  }
+  stopSpeech();
+  const g = S.data.guides.find((x) => x.id === el.dataset.id);
+  const voice = synth.getVoices().find((v) => v.lang === 'en-GB') ?? synth.getVoices().find((v) => v.lang.startsWith('en'));
+  const chunks = speechChunks(g);
+  chunks.forEach((text, i) => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB'; if (voice) u.voice = voice; u.rate = 0.95;
+    if (i === chunks.length - 1) u.onend = () => { S.ui.speaking = null; render(); };
+    synth.speak(u);
+  });
+  S.ui.speaking = g.id; S.ui.paused = false; render();
+};
+
 document.addEventListener('click', (event) => {
   const el = event.target.closest('[data-action]');
   if (el && ACTIONS[el.dataset.action]) ACTIONS[el.dataset.action](el);
@@ -199,6 +221,7 @@ window.addEventListener('hashchange', () => {
   if (parseSpecialHash(location.hash)) { boot(); return; }
   S.ui.ask = null;
   S.ui.driver = null;
+  stopSpeech();
   render();
   window.scrollTo(0, 0);
 });

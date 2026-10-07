@@ -153,3 +153,18 @@ test('the Tickets tab replaces Book and booking rows show a buy button', () => {
   assert.match(String(out.nav), /Tickets/);
   assert.match(String(out.main), /class="btn small"[^>]*href="https:\/\/castelodesaojorge\.pt\/en\/"|href="https:\/\/castelodesaojorge\.pt\/en\/"[^>]*class="btn small"/);
 });
+
+test('guide page shows the photo with its credit, read-more links and Listen', () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/guide/belem-tower');
+  const g = ctx.guides.find((x) => x.id === 'belem-tower');
+  const withMedia = { ...g, images: { hero: { src: 'https://upload.wikimedia.org/x/960px-Tower.jpg', page: 'https://commons.wikimedia.org/wiki/File:Tower.jpg', alt: 'The tower', credit: 'A. Person', licence: 'CC BY-SA 4.0' }, lookFor: [{ index: 0, src: 'https://upload.wikimedia.org/x/500px-Rhino.jpg', page: 'https://commons.wikimedia.org/wiki/File:Rhino.jpg', alt: 'Rhino', credit: 'B', licence: 'CC0' }] }, links: [{ label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Bel%C3%A9m_Tower' }], video: { label: 'Short film', url: 'https://www.youtube.com/watch?v=x', minutes: 5 } };
+  globalThis.speechSynthesis = {};
+  const out = String(guideView({ ...ctx, guides: ctx.guides.map((x) => (x.id === g.id ? withMedia : x)) }));
+  delete globalThis.speechSynthesis;
+  assert.match(out, /<img[^>]+src="https:\/\/upload\.wikimedia\.org\/x\/960px-Tower\.jpg"[^>]+loading="lazy"/);
+  assert.match(out, /A\. Person · CC BY-SA 4\.0/);
+  assert.match(out, /500px-Rhino\.jpg/);
+  assert.match(out, /Read more/);
+  assert.match(out, /Short film · 5 min/);
+  assert.match(out, /data-action="listen" data-id="belem-tower"/);
+});

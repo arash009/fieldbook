@@ -51,7 +51,7 @@ export async function buildSingleFile({ root, envelope }) {
   const data = JSON.stringify(envelope).replace(/</g, '\\u003c');
   const script = js.replace(/<\/script/gi, '<\\/script');
   return index
-    .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, () => `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">`)
+    .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, () => `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob: https://upload.wikimedia.org; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src https://api.open-meteo.com; base-uri 'none'; form-action 'none'">`)
     .replace(/<link rel="manifest"[^>]*>\s*/, () => '')
     .replace(/<link rel="icon"[^>]*>\s*/, () => '')
     .replace(/<link rel="stylesheet" href="app\.css">/, () => `<style>${css}</style>`)

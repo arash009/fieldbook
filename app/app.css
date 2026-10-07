@@ -215,3 +215,13 @@ details.kid { background: #eef2ff; border-color: var(--rest); }
 .entry .row { align-items: center; }
 .entry .sec { margin: 0; }
 .bk .btn.small { flex: none; align-self: center; }
+.hero.has-photo { padding-top: 0; }
+.hero-img { display: block; width: calc(100% + 32px); margin: 0 -16px 10px; aspect-ratio: 16 / 10; object-fit: cover; background: #00000022; }
+.credit { display: block; font-size: .72rem; color: #444; padding: 3px 16px 0; text-decoration: none; }
+.listen { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 50px; margin: 10px 0; padding: 8px 14px; border-radius: 12px; background: var(--rest); color: #fff; font-weight: 800; font-size: 1rem; }
+.listen span { margin-left: auto; font-size: .78rem; font-weight: 600; }
+.look { list-style: none; padding: 0; }
+.look li { display: flex; gap: 10px; align-items: center; margin: 8px 0; }
+.look img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; flex: none; background: #00000014; }
+.readmore { list-style: none; padding: 0; margin: 0; }
+.readmore a { display: flex; justify-content: space-between; min-height: 48px; align-items: center; border-bottom: 1px solid var(--line); text-decoration: none; font-weight: 700; }
