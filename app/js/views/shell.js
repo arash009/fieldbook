@@ -9,7 +9,7 @@ import { infoView, infoCardView } from './info.js';
 import { askSheet } from './ask.js';
 
 const VIEWS = { today: todayView, day: dayView, days: daysView, stop: stopView, bookings: bookingsView, guide: guideListView, guideItem: guideView, info: infoView, infoCard: infoCardView };
-const TABS = [['today', 'Today', '●'], ['days', 'Days', '▤'], ['bookings', 'Book', '✓'], ['guide', 'Guide', '✦'], ['info', 'Info', 'ⓘ']];
+const TABS = [['today', 'Today', '●'], ['days', 'Days', '▤'], ['bookings', 'Tickets', '🎟'], ['guide', 'Guide', '✦'], ['info', 'Info', 'ⓘ']];
 const TAB_OF = { day: 'days', stop: 'days', guideItem: 'guide', infoCard: 'info' };
 
 export const driverOverlay = (text) => html`<div class="driver" role="dialog" aria-modal="true" aria-label="Address for the driver"><p class="big">${text}</p><button class="btn p big" type="button" data-action="driver-close">Close</button></div>`;

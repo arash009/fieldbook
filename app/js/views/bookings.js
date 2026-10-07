@@ -11,8 +11,9 @@ export function bookingsView(ctx) {
   const filter = ctx.ui.bookingFilter ?? 'todo';
   const list = filterBookings(all, filter, ctx.ticks);
   const left = filterBookings(all, 'todo', ctx.ticks).length;
-  return html`<header class="top bar"><h1>Bookings</h1><div class="sub">Soonest first · ${left} left to do</div></header>
+  return html`<header class="top bar"><h1>Tickets</h1><div class="sub">Soonest first · ${left} left to do</div></header>
     <div class="body">
+      <h3 class="sec">To book</h3>
       <div class="filters">${FILTERS.map(([id, label]) => html`<button type="button" class="pill${id === filter ? ' on' : ''}" aria-pressed="${id === filter}" data-action="filter" data-filter="${id}">${label}</button>`)}</div>
       ${list.length ? html`<ul class="bookings">${list.map((b) => bookingRow(ctx, b))}</ul>` : html`<p class="empty">Nothing here.</p>`}
     </div>`;
@@ -29,5 +30,6 @@ function bookingRow(ctx, b) {
       ${b.notes ? html`<p class="n">${b.notes}</p>` : ''}
       ${url ? html`<a class="btn" href="${url}" target="_blank" rel="noopener">Open the booking site</a>` : ''}
     </details>
+    ${url && !done ? html`<a class="btn small" href="${url}" target="_blank" rel="noopener">Buy ›</a>` : ''}
   </li>`;
 }

@@ -15,6 +15,7 @@ import { infoView, infoCardView, infoCards } from '../app/js/views/info.js';
 import { renderApp } from '../app/js/views/shell.js';
 import { landingView } from '../app/js/views/landing.js';
 import { unlockView } from '../app/js/views/unlock.js';
+import { entryCard, entryBadge } from '../app/js/views/entry.js';
 
 const demo = indexPayload(await loadTripDir(fileURLToPath(new URL('../demo/', import.meta.url))));
 const ctxAt = (date, time, hash = '#/today', extra = {}) => ({
@@ -133,4 +134,22 @@ test('the demo still links meals, boards and days after its dates are moved to t
   const ctx = { ...moved, mode: 'demo', now: makeLocal(day1, '09:00'), ticks: new Set(), ui: { tabs: {} }, route: parseRoute('#/stop/d1-lunch') };
   assert.match(String(stopView(ctx)), /Sou vegetariano/);
   assert.match(String(todayView({ ...ctx, route: parseRoute('#/today') })), /Leaving now/);
+});
+
+test('entry card: badge, buy link, booked state and ticket button', () => {
+  const ctx = ctxAt('2030-06-01', '09:00');
+  const entry = { booking: 'required', bookingId: 'castle', summary: 'Book a slot.', buyUrl: 'https://castelodesaojorge.pt/en/', prices: 'Adults €15', hours: '09:00–21:00', sources: [], checked: '2030-05-01' };
+  const card = String(entryCard(ctx, entry, null));
+  assert.match(card, /PRE-BOOK/);
+  assert.match(card, /href="https:\/\/castelodesaojorge\.pt\/en\/"[^>]*>Buy tickets ›/);
+  const booked = String(entryCard({ ...ctx, ticks: new Set(['booking:castle']) }, entry, { id: 't1' }));
+  assert.match(booked, /BOOKED ✓/);
+  assert.match(booked, /data-action="ticket" data-id="t1"/);
+  assert.equal(String(entryBadge(ctx, null)), '');
+});
+
+test('the Tickets tab replaces Book and booking rows show a buy button', () => {
+  const out = renderApp(ctxAt('2030-05-30', '09:00', '#/bookings'));
+  assert.match(String(out.nav), /Tickets/);
+  assert.match(String(out.main), /class="btn small"[^>]*href="https:\/\/castelodesaojorge\.pt\/en\/"|href="https:\/\/castelodesaojorge\.pt\/en\/"[^>]*class="btn small"/);
 });

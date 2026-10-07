@@ -1,7 +1,8 @@
 // One stop in detail: transport options with later times, departure boards, meal and stay cards.
 import { html } from '../html.js';
 import { formatDay } from '../clock.js';
-import { findStop, findDining, stopTickId, boardRows, guideIdsOf } from '../plan.js';
+import { findStop, findDining, stopTickId, boardRows, guideIdsOf, entryFor, ticketFor } from '../plan.js';
+import { entryBadge, entryCard } from './entry.js';
 import { kv, sources, mapButton, notFound, range, lineChip, backLink } from './parts.js';
 import { askLine } from './ask.js';
 import { mealPanel } from './meal.js';
@@ -17,10 +18,12 @@ export function stopView(ctx) {
   const stay = stop.stay ? (ctx.trip.stays ?? []).find((s) => s.id === stop.stay) : null;
   const guides = guideIdsOf(stop).map((id) => ctx.guides.find((g) => g.id === id)).filter(Boolean);
   const when = stop.timeLabel ?? stop.time;
+  const entry = entryFor(ctx.guides, stop);
   return html`<header class="top bar t-${stop.type}">${backLink(`#/day/${day.date}`, formatDay(day.date))}
-      <h1>${stop.title}</h1><div class="sub">${when}${stop.optional ? ' · optional' : ''}</div></header>
+      <h1>${stop.title}</h1><div class="sub">${when}${stop.optional ? ' · optional' : ''} ${entryBadge(ctx, entry)}</div></header>
     <div class="body">
       ${stop.notes ? html`<p class="lead">${stop.notes}</p>` : ''}
+      ${entry ? entryCard(ctx, entry, ticketFor(ctx.private?.tickets, { bookingId: entry.bookingId, stopId: stop.id })) : ''}
       ${route ? routePanel(ctx, stop.id, route) : ''}
       ${board ? boardPanel(ctx, board, stop.boardTab ?? 0, day.date) : ''}
       ${dining ? mealPanel(ctx, dining) : ''}

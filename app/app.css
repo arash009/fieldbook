@@ -204,3 +204,14 @@ details.kid { background: #eef2ff; border-color: var(--rest); }
   .sheet { animation: rise .18s ease-out; }
   @keyframes rise { from { transform: translateY(30px); opacity: 0; } }
 }
+
+.badge { display: inline-block; font-size: .68rem; font-weight: 800; border-radius: 6px; padding: 2px 6px; vertical-align: 2px; white-space: nowrap; }
+.b-required { background: var(--alert); color: #fff; }
+.b-recommended { background: var(--amber); color: #000; }
+.b-at-door { background: var(--meal); color: #fff; }
+.b-free { border: 2px solid var(--ink); padding: 0 5px; }
+.b-booked { background: var(--transport); color: #fff; }
+.entry { border: 3px solid var(--ink); border-radius: 14px; padding: 10px 12px; margin: 12px 0; }
+.entry .row { align-items: center; }
+.entry .sec { margin: 0; }
+.bk .btn.small { flex: none; align-self: center; }
