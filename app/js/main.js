@@ -199,6 +199,29 @@ ACTIONS.listen = (el) => {
   S.ui.speaking = g.id; S.ui.paused = false; render();
 };
 
+let watchId = null;
+let lastPos = null;
+function gpsOff(error) {
+  if (watchId != null) navigator.geolocation.clearWatch(watchId);
+  watchId = null; lastPos = null;
+  S.ui.gps = error ? { on: false, error } : { on: false };
+  render();
+}
+ACTIONS.gps = () => {
+  if (S.ui.gps?.on) { gpsOff(); return; }
+  if (!navigator.geolocation) { gpsOff('This phone has no location service.'); return; }
+  S.ui.gps = { on: true };
+  render();
+  watchId = navigator.geolocation.watchPosition((p) => {
+    const pos = { lat: p.coords.latitude, lng: p.coords.longitude };
+    const moved = !lastPos || Math.abs(pos.lat - lastPos.lat) + Math.abs(pos.lng - lastPos.lng) > 0.0003;
+    if (!moved) return;
+    lastPos = pos;
+    S.ui.gps = { on: true, pos };
+    render();
+  }, (e) => gpsOff(e.code === 1 ? 'Location is blocked for this site. Allow it in Chrome settings to use Where am I?' : "Couldn't get your location."), { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+};
+
 document.addEventListener('click', (event) => {
   const el = event.target.closest('[data-action]');
   if (el && ACTIONS[el.dataset.action]) ACTIONS[el.dataset.action](el);
@@ -222,7 +245,8 @@ window.addEventListener('hashchange', () => {
   S.ui.ask = null;
   S.ui.driver = null;
   stopSpeech();
-  render();
+  if (S.ui.gps && parseRoute(location.hash).name !== 'stop') gpsOff(); // gpsOff renders
+  else render();
   window.scrollTo(0, 0);
 });
 
