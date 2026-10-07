@@ -26,7 +26,8 @@ function dayScreen(ctx, day) {
   const pace = paceBox(trip);
   return html`<header class="top"><div class="row"><div>
       <div class="date">${formatDay(day.date)} · ${day.city} · Day ${idx + 1} of ${trip.days.length}</div>
-      <h1>${day.title}</h1></div>${askButton(ctx)}</div></header>
+      <h1>${day.title}</h1>
+  ${ctx.weather?.[day.date] ? (() => { const w = ctx.weather[day.date]; return html`<div class="wx"><span aria-hidden="true">${w.icon}</span> ${w.text} · ${w.max}° / ${w.min}°${w.rain != null ? ` · ${w.rain}% rain` : ''}${w.sunset ? ` · sunset ${w.sunset}` : ''}</div>`; })() : ''}</div>${askButton(ctx)}</div></header>
     <div class="body">
       ${activeAlerts(trip.alerts, now).map((a) => alertBanner(a, now))}
       ${pace && !ticks.has(`pace:${day.date}`) ? html`<div class="pace-once">${pace}<button class="btn small" type="button" data-action="tick" data-id="pace:${day.date}">Got it</button></div>` : ''}

@@ -1,5 +1,6 @@
 // Boots the app: landing page, demo, a remembered encrypted trip, or a single-file backup.
-import { localNow, parseNowOverride, daysBetween } from './clock.js';
+import { localNow, parseNowOverride, daysBetween, addDays } from './clock.js';
+import { forecastUrl, parseForecast } from './weather.js';
 import { open, openWithKey } from './crypto.js';
 import { loadKey, saveKey, forgetKey } from './keystore.js';
 import { loadTicks, saveTicks, toggleTick } from './ticks.js';
@@ -30,7 +31,7 @@ function now() {
   return parseNowOverride(new URLSearchParams(location.search).get('now')) ?? localNow(S.data.trip.meta.timezone);
 }
 
-const context = () => ({ ...S.data, mode: S.mode, now: now(), ticks: S.ticks, ui: S.ui, route: parseRoute(location.hash) });
+const context = () => ({ ...S.data, mode: S.mode, now: now(), ticks: S.ticks, ui: S.ui, weather: S.weather, route: parseRoute(location.hash) });
 
 function show(content) {
   main.innerHTML = String(content);
@@ -62,6 +63,24 @@ function ready(payload) {
     const previous = local.get(key);
     if (previous && previous !== S.envelope.iv) toast('Trip updated');
     local.set(key, S.envelope.iv);
+  }
+  render();
+  loadWeather();
+}
+
+async function loadWeather() {
+  const trip = S.data.trip;
+  const cities = trip.cities ?? {};
+  const today = now().date;
+  const S16 = addDays(today, 15);
+  S.weather = S.weather ?? {};
+  for (const [name, city] of Object.entries(cities)) {
+    const dates = trip.days.filter((d) => d.city === name && d.date >= today && d.date <= S16).map((d) => d.date);
+    if (!dates.length) continue;
+    try {
+      const res = await fetch(forecastUrl(city, trip.meta.timezone, dates[0], dates.at(-1)));
+      if (res.ok) Object.assign(S.weather, parseForecast(await res.json()));
+    } catch { /* no forecast: header shows none */ }
   }
   render();
 }
@@ -252,5 +271,6 @@ window.addEventListener('hashchange', () => {
 
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') render(); });
 setInterval(() => { if (S.data && !S.ui.ask && document.visibilityState === 'visible') render(); }, 30000);
+setInterval(() => { if (S.data) loadWeather(); }, 3600000);
 
 boot();

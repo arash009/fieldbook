@@ -209,3 +209,9 @@ test('a board row names its train once, even when the note already gives the num
   assert.doesNotMatch(out, /CP 1422/);
   assert.match(out, /CP 1442/);
 });
+
+test('the day header shows the forecast when there is one', () => {
+  const weather = { '2030-06-01': { icon: '☀', text: 'Clear', max: 24, min: 16, rain: 10, sunset: '21:05' } };
+  assert.match(String(dayView(ctxAt('2030-06-01', '09:00', '#/day/2030-06-01', { weather }))), /Clear · 24° \/ 16° · 10% rain · sunset 21:05/);
+  assert.doesNotMatch(String(dayView(ctxAt('2030-06-01', '09:00', '#/day/2030-06-02', { weather }))), /class="wx"/);
+});

@@ -239,3 +239,4 @@ details.kid { background: #eef2ff; border-color: var(--rest); }
 .strip-stops.calls { --c: var(--alert); }
 .gps-note { font-size: .88rem; font-weight: 700; background: #fff8d6; border-radius: 8px; padding: 6px 8px; }
 .pill.gps.on { background: var(--taxi); color: #000; border-color: #000; }
+.wx { font-size: .9rem; font-weight: 700; margin-top: 4px; }
