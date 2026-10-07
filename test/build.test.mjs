@@ -57,3 +57,12 @@ test('buildSingleFile inlines everything and survives $ patterns', async () => {
   assert.doesNotMatch(page, /manifest\.webmanifest|src="app\.js"|href="app\.css"/);
   assert.match(page, /<style>/);
 });
+
+test('the demo build copies its sample ticket and lists it as a plain file', async () => {
+  const out = await mkdtemp(join(tmpdir(), 'fb-site-'));
+  await buildSite({ root: fileURLToPath(new URL('..', import.meta.url)), out });
+  const demo = JSON.parse(await readFile(join(out, 'demo/trip.json'), 'utf8'));
+  assert.deepEqual(demo.private.tickets.map((t) => [t.file, t.plain, t.mime]), [['demo/tickets/sample.png', true, 'image/png']]);
+  assert.equal(demo.private.ticketList, undefined);
+  assert.deepEqual(await readdir(join(out, 'demo/tickets')), ['sample.png']);
+});

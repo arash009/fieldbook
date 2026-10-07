@@ -35,7 +35,7 @@ app/ ──fieldbook build──► index.html, app.js, sw.js ───┘
 - a weak passphrase;
 - anything the owner sends elsewhere, such as the context copied into Claude by Ask Claude.
 
-**Tickets:** each file in `private/tickets/` is encrypted separately with the same key, into `trips/<id>/<random>.enc`, so the main trip file stays small and the file names say nothing. The app fetches a ticket only when it's opened and decrypts it in memory. Images are shown directly; PDFs are drawn to canvases by PDF.js. Decrypted bytes are never written to storage. **Open in phone viewer** hands the file to the phone's own viewer after a warning, because that viewer may save a copy.
+**Tickets:** each file in `private/tickets/` is encrypted separately with the same key, into `trips/<id>/<random>.enc`, so the main trip file stays small and the file names say nothing. Each ticket keeps its random name from one deploy to the next (the names are kept in `private/ticket-names.json`), and if a ticket has moved anyway, the app reloads the trip file with the saved key and tries again. The app fetches a ticket only when it's opened and decrypts it in memory. Images are shown directly; PDFs are drawn to canvases by PDF.js. Decrypted bytes are never written to storage. **Open in phone viewer** hands the file to the phone's own viewer after a warning, because that viewer may save a copy.
 
 **Third-party requests:** the hosted app talks to three outside services, and nothing from the trip file is sent to any of them:
 - `upload.wikimedia.org` for guide photos;

@@ -55,7 +55,7 @@ function transitOption(ctx, o) {
   const lineIds = [...new Set(legs.filter((l) => l.line).map((l) => l.line))];
   const maps = lineIds.map((id) => ctx.transport.lines[id]).filter((l) => safeUrl(l?.mapUrl));
   const gps = ctx.ui.gps ?? {};
-  return html`${strips.some(Boolean) ? html`<button class="pill gps${gps.on ? ' on' : ''}" type="button" data-action="gps" aria-pressed="${Boolean(gps.on)}">📍 Where am I? ${gps.on ? 'On' : 'Off'}</button>${gps.error ? html`<p class="n">${gps.error}</p>` : ''}` : ''}
+  return html`${strips.some(Boolean) ? html`<button class="pill gps${gps.on ? ' on' : ''}" type="button" data-action="gps" aria-pressed="${Boolean(gps.on)}">📍 Where am I? ${gps.on ? 'On' : 'Off'}</button>${gps.error ? html`<p class="n">${gps.error}</p>` : ''}${gps.on && !gps.pos ? html`<p class="gps-note">📍 Finding you… (underground this can take a while)</p>` : ''}` : ''}
     ${legs.map((l, i) => strips[i] ?? html`<ol class="legs">${legRow(ctx, l)}</ol>`)}
     ${maps.length ? html`<div class="btns">${maps.map((l) => html`<a class="btn" href="${l.mapUrl}" target="_blank" rel="noopener">🗺 ${l.name ?? l.label} map ›</a>`)}</div>` : ''}
     ${service || o.later ? html`<h3 class="sec">Going later?</h3>${kv('Runs', service?.hoursText)}${kv('Every', service?.frequency)}${kv('Leave by', o.later)}` : ''}

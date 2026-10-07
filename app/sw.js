@@ -33,7 +33,7 @@ async function photo(request) {
   const hit = await cache.match(request);
   if (hit) return hit;
   const res = await fetch(request);
-  if (res.ok || res.type === 'opaque') {
+  if (res.ok) { // guide photos are CORS requests, so a failed one is never kept
     try {
       await cache.put(request, res.clone());
       const keys = await cache.keys();

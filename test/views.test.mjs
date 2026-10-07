@@ -224,3 +224,39 @@ test('the Tickets tab lists tickets with today first', () => {
   assert.ok(out.indexOf('Monastery') < out.indexOf('Castle'));
   assert.match(out, /data-action="ticket" data-id="b"/);
 });
+
+test('Where am I? says once when it is still finding you, and per line when you are far from it', () => {
+  const waiting = String(stopView(ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle', { ui: { tabs: {}, gps: { on: true } } })));
+  assert.equal((waiting.match(/Finding you/g) ?? []).length, 1);
+  const ctx = stripCtx();
+  const leg = { line: 'lis-28', from: 'Rua da Conceição', to: 'Miradouro de Santa Luzia', direction: 'Miradouro de Santa Luzia' };
+  const far = String(lineStrip({ ...ctx, ui: { tabs: {}, gps: { on: true, pos: { lat: 40.4168, lng: -3.7038 } } } }, leg, {}));
+  assert.match(far, /not near this line/);
+  assert.doesNotMatch(far, /YOU'RE HERE/);
+  assert.doesNotMatch(String(lineStrip(ctx, leg, {})), /gps-note/);
+});
+
+test('guide photos are requested with CORS, so the photo cache can tell a failed response from a good one', () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/guide/belem-tower');
+  const g = ctx.guides.find((x) => x.id === 'belem-tower');
+  const withMedia = { ...g, lookFor: ['A rhino.'], images: { hero: { src: 'https://upload.wikimedia.org/x/960px-T.jpg', page: 'https://commons.wikimedia.org/wiki/File:T.jpg', alt: 'T', credit: 'A', licence: 'CC0' }, lookFor: [{ index: 0, src: 'https://upload.wikimedia.org/x/500px-R.jpg', alt: 'R', credit: 'B', licence: 'CC0' }] } };
+  const out = String(guideView({ ...ctx, guides: ctx.guides.map((x) => (x.id === g.id ? withMedia : x)) }));
+  assert.equal((out.match(/<img[^>]+crossorigin="anonymous"/g) ?? []).length, 2);
+});
+
+test('a ride that cannot be placed on its line falls back to the text leg, with no strip or GPS switch', () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle');
+  const route = ctx.transport.routes['baixa-castle'];
+  for (const bad of [{ from: 'Nowhere' }, { direction: 'Prazeres' }, { from: 'Miradouro de Santa Luzia', to: 'Rua da Conceição' }]) {
+    const legs = route.options[0].legs.map((l) => (l.line ? { ...l, ...bad } : l));
+    const c = { ...ctx, transport: { ...ctx.transport, routes: { ...ctx.transport.routes, 'baixa-castle': { ...route, options: [{ ...route.options[0], legs }, ...route.options.slice(1)] } } } };
+    const out = String(stopView(c));
+    assert.doesNotMatch(out, /class="strip"/, JSON.stringify(bad));
+    assert.doesNotMatch(out, /data-action="gps"/, JSON.stringify(bad));
+    assert.match(out, /<b>Direction [^<]+<\/b>, 3 stops to <b>/, JSON.stringify(bad));
+  }
+});
+
+test('the guide has no Listen button when the browser has no speech', () => {
+  assert.doesNotMatch(String(guideView(ctxAt('2030-06-01', '09:00', '#/guide/castle'))), /data-action="listen"/);
+});

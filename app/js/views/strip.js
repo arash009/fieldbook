@@ -14,6 +14,7 @@ export function lineStrip(ctx, leg, { change = false } = {}) {
     <div class="strip-head">${lineChip(ctx, leg.line)} <b>Direction ${leg.direction}</b> · ${n} stop${n === 1 ? '' : 's'}</div>
     <ol class="strip-stops">${stops.map((s, i) => html`<li class="${s.role}${here?.index === i ? ' here' : ''}"><span>${s.name}</span>${s.role === 'board' ? html`<b class="tag">BOARD</b>` : ''}${s.role === 'alight' ? html`<b class="tag">${change ? 'CHANGE' : 'GET OFF'}</b>` : ''}${here?.index === i ? html`<b class="tag here">YOU'RE HERE</b>` : ''}</li>`)}</ol>
     ${here ? html`<p class="gps-note">📍 Near ${here.name} · ${here.left} stop${here.left === 1 ? '' : 's'} to ${last}</p>` : ''}
+    ${ctx.ui.gps?.pos && !here ? html`<p class="gps-note">📍 You're not near this line: no stop within 1.5 km.</p>` : ''}
     ${leg.text ? html`<p class="n">${leg.text}</p>` : ''}
   </div>`;
 }

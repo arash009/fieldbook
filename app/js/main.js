@@ -240,17 +240,46 @@ ACTIONS.gps = () => {
     lastPos = pos;
     S.ui.gps = { on: true, pos };
     render();
-  }, (e) => gpsOff(e.code === 1 ? 'Location is blocked for this site. Allow it in Chrome settings to use Where am I?' : "Couldn't get your location."), { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+  }, (e) => {
+    // Only a refusal stops the watch. No fix yet (underground, a timeout) keeps watching: the strip shows
+    // "Finding you…", or the last position if there was one.
+    if (e.code === 1) gpsOff('Location is blocked for this site. Allow it in Chrome settings to use Where am I?');
+  }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
 };
+
+async function fetchTicket(t) {
+  const res = await fetch(t.plain ? t.file : `trips/${t.file}`, { cache: 'no-cache' });
+  if (!res.ok) throw Object.assign(new Error(String(res.status)), { status: res.status });
+  return t.plain ? new Uint8Array(await res.arrayBuffer()) : openBytes(await res.json(), S.key);
+}
+
+// The trip was redeployed since this page loaded and the ticket moved: reload the trip with the saved key.
+async function refreshTrip() {
+  try {
+    const res = await fetch(`trips/${S.tripId}.enc`, { cache: 'no-cache' });
+    if (!res.ok) return false;
+    const envelope = await res.json();
+    const data = await openWithKey(envelope, S.key);
+    S.envelope = envelope;
+    S.data = indexPayload(data);
+    render();
+    return true;
+  } catch { return false; }
+}
 
 ACTIONS.ticket = (el) => {
   const t = (S.data.private.tickets ?? []).find((x) => x.id === el.dataset.id);
   if (!t) return;
   if (S.mode === 'file') { toast('Tickets open in the online app.'); return; }
   openTicketViewer({ ticket: t, load: async () => {
-    const res = await fetch(t.plain ? t.file : `trips/${t.file}`, { cache: 'no-cache' });
-    if (!res.ok) throw new Error(String(res.status));
-    return t.plain ? new Uint8Array(await res.arrayBuffer()) : openBytes(await res.json(), S.key);
+    try {
+      return await fetchTicket(t);
+    } catch (e) {
+      if (e.status !== 404 || t.plain || !(await refreshTrip())) throw e;
+      const fresh = (S.data.private.tickets ?? []).find((x) => x.id === t.id);
+      if (!fresh) throw e;
+      return fetchTicket(fresh);
+    }
   } });
 };
 

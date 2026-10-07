@@ -3,21 +3,25 @@ const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js
 const WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 // cdnjs's published SRI hashes for these exact files (checked against the downloaded bytes).
 const SRI = { lib: 'sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==', worker: 'sha512-BbrZ76UNZq5BhH7LL7pn9A4TKQpQeNCHOo65/akfelcIBbcVvYWOFQKPXIrykE3qZxYjmDX573oa4Ywsc7rpTw==' };
-let pdfjs;
-
-function loadPdfJs() {
-  pdfjs ??= new Promise((ok, fail) => {
-    const s = document.createElement('script');
-    s.src = PDFJS; s.integrity = SRI.lib; s.crossOrigin = 'anonymous';
-    s.onload = () => ok(globalThis.pdfjsLib); s.onerror = () => fail(new Error('PDF viewer failed to load'));
-    document.head.append(s);
-  }).then(async (lib) => {
-    const code = await (await fetch(WORKER, { integrity: SRI.worker })).text();
-    lib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
-    return lib;
-  });
-  return pdfjs;
+// Keeps a load that worked; forgets one that failed, so "Try again" really tries again once there's signal.
+export function retryable(load) {
+  let pending = null;
+  return () => (pending ??= load().catch((e) => { pending = null; throw e; }));
 }
+
+const loadPdfJs = retryable(() => new Promise((ok, fail) => {
+  if (globalThis.pdfjsLib) { ok(globalThis.pdfjsLib); return; }
+  const s = document.createElement('script');
+  s.src = PDFJS; s.integrity = SRI.lib; s.crossOrigin = 'anonymous';
+  s.onload = () => ok(globalThis.pdfjsLib);
+  s.onerror = () => { s.remove(); fail(new Error('PDF viewer failed to load')); };
+  document.head.append(s);
+}).then(async (lib) => {
+  const res = await fetch(WORKER, { integrity: SRI.worker });
+  if (!res.ok) throw new Error('PDF viewer failed to load');
+  lib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([await res.text()], { type: 'text/javascript' }));
+  return lib;
+}));
 
 export function openTicketViewer({ ticket, load, onClose }) {
   const box = document.createElement('div');

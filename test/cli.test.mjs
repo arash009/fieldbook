@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,4 +77,23 @@ test('encryptTrip packs each ticket as its own encrypted file', async () => {
   assert.deepEqual(Buffer.from(await openBytes(fileEnv, key)), original);
   await writeFile(join(trip, 'private/tickets.json'), JSON.stringify([{ id: 't2', label: 'X', date: '2030-06-01', file: 'missing.pdf' }]));
   await assert.rejects(encryptTrip({ root: ROOT, tripDir: trip, outDir: out, id: 'abcd1234', passphrase: PASS, iterations: 1000 }), /missing\.pdf/);
+});
+
+test('ticket files keep their names across encrypts, and files no longer listed are removed', async () => {
+  const trip = await mkdtemp(join(tmpdir(), 'fb-trip-'));
+  await cp(join(ROOT, 'demo'), trip, { recursive: true });
+  const list = join(trip, 'private/tickets.json');
+  const out = await mkdtemp(join(tmpdir(), 'fb-out-'));
+  const run = async () => {
+    await encryptTrip({ root: ROOT, tripDir: trip, outDir: out, id: 'abcd1234', passphrase: PASS, iterations: 1000 });
+    return (await open(JSON.parse(await readFile(join(out, 'abcd1234.enc'), 'utf8')), PASS)).data.private.tickets;
+  };
+  await writeFile(list, JSON.stringify([{ id: 't1', label: 'A', date: '2030-06-01', file: 'sample.png' }, { id: 't2', label: 'B', date: '2030-06-02', file: 'sample.png' }]));
+  const first = await run();
+  const second = await run();
+  assert.deepEqual(second.map((t) => t.file), first.map((t) => t.file));
+  await writeFile(list, JSON.stringify([{ id: 't2', label: 'B', date: '2030-06-02', file: 'sample.png' }]));
+  const third = await run();
+  assert.equal(third[0].file, first[1].file);
+  assert.deepEqual(await readdir(join(out, 'abcd1234')), [first[1].file.split('/')[1]]);
 });
