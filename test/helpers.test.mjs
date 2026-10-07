@@ -66,5 +66,10 @@ test('indexPayload fills defaults and gives boards their ids', () => {
   assert.equal(d.transport.boards.k.id, 'k');
   assert.deepEqual(d.transport.routes, {});
   assert.deepEqual(d.guides, []);
-  assert.deepEqual(d.private, { stays: {}, config: {} });
+  assert.deepEqual(d.private, { stays: {}, config: {}, tickets: [] });
+});
+
+test('indexPayload keeps the live-status links for trains', () => {
+  const d = indexPayload({ trip: { days: [] }, transport: { liveStatus: { rail: 'http://live.example/{number}' } } });
+  assert.equal(d.transport.liveStatus.rail, 'http://live.example/{number}');
 });

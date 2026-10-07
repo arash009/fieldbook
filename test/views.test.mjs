@@ -215,3 +215,11 @@ test('the day header shows the forecast when there is one', () => {
   assert.match(String(dayView(ctxAt('2030-06-01', '09:00', '#/day/2030-06-01', { weather }))), /Clear · 24° \/ 16° · 10% rain · sunset 21:05/);
   assert.doesNotMatch(String(dayView(ctxAt('2030-06-01', '09:00', '#/day/2030-06-02', { weather }))), /class="wx"/);
 });
+
+test('the Tickets tab lists tickets with today first', () => {
+  const ctx = ctxAt('2030-06-02', '09:00', '#/bookings');
+  ctx.private = { ...ctx.private, tickets: [{ id: 'a', label: 'Castle', date: '2030-06-01', mime: 'image/png' }, { id: 'b', label: 'Monastery', date: '2030-06-02', mime: 'application/pdf' }] };
+  const out = String(renderApp(ctx).main);
+  assert.ok(out.indexOf('Monastery') < out.indexOf('Castle'));
+  assert.match(out, /data-action="ticket" data-id="b"/);
+});

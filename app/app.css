@@ -240,3 +240,15 @@ details.kid { background: #eef2ff; border-color: var(--rest); }
 .gps-note { font-size: .88rem; font-weight: 700; background: #fff8d6; border-radius: 8px; padding: 6px 8px; }
 .pill.gps.on { background: var(--taxi); color: #000; border-color: #000; }
 .wx { font-size: .9rem; font-weight: 700; margin-top: 4px; }
+
+.wallet { list-style: none; padding: 0; margin: 0 0 8px; }
+.ticket { display: flex; gap: 10px; align-items: center; width: 100%; min-height: 60px; margin: 6px 0; padding: 8px 10px; border: 2px solid var(--ink); border-radius: 12px; text-align: left; }
+.ticket .ic { width: 36px; height: 44px; flex: none; border-radius: 6px; background: var(--alert); color: #fff; font-size: .7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.tv { position: fixed; inset: 0; z-index: 50; background: #fff; display: flex; flex-direction: column; }
+.tv-bar { display: flex; gap: 8px; align-items: center; padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px; border-bottom: 3px solid var(--ink); }
+.tv-title { flex: 1; }
+.tv-pages { flex: 1; overflow: auto; padding: 8px; background: #f2f2f2; }
+.tv-pages canvas, .tv-pages img { display: block; width: 100%; height: auto; margin: 0 auto 8px; background: #fff; }
+.tv-msg, .tv-warn { padding: 12px; font-weight: 700; }
+.tv-warn { background: #fff8d6; margin: 0; }
+.ticket b { margin-left: auto; white-space: nowrap; }

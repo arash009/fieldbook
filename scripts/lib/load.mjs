@@ -19,5 +19,6 @@ export async function loadTripDir(dir) {
   const transport = await read('data/transport.json');
   const stays = await read('private/stays.json');
   const config = await read('private/config.json');
-  return { format: 'fieldbook/1', trip, guides: guides?.guides ?? [], transport: transport ?? {}, private: { stays: stays ?? {}, config: config ?? {} } };
+  const tickets = await read('private/tickets.json');
+  return { format: 'fieldbook/1', trip, guides: guides?.guides ?? [], transport: transport ?? {}, private: { stays: stays ?? {}, config: config ?? {}, ticketList: tickets ?? [] } };
 }

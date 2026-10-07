@@ -1,7 +1,7 @@
 // Builds the public site (app + demo) and the single-file backup of an encrypted trip.
 import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { join, relative } from 'node:path';
+import { extname, join, relative } from 'node:path';
 import { bundle } from './bundle.mjs';
 import { writeIcons } from './icons.mjs';
 import { loadTripDir } from './load.mjs';
@@ -23,6 +23,8 @@ async function hashTree(dir, skip) {
   return hash.digest('hex').slice(0, 12);
 }
 
+export const TICKET_MIME = { '.pdf': 'application/pdf', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg' };
+
 export async function buildSite({ root, out }) {
   const demo = await loadTripDir(join(root, 'demo'));
   const errors = validatePayload(demo);
@@ -33,7 +35,17 @@ export async function buildSite({ root, out }) {
   for (const f of ['index.html', 'app.css', 'manifest.webmanifest']) await cp(join(root, 'app', f), join(out, f));
   await cp(join(root, 'app/icons'), join(out, 'icons'), { recursive: true });
   await writeIcons(join(out, 'icons'));
-  await mkdir(join(out, 'demo'), { recursive: true });
+  await mkdir(join(out, 'demo/tickets'), { recursive: true });
+  const list = demo.private.ticketList ?? [];
+  delete demo.private.ticketList;
+  demo.private.tickets = [];
+  for (const t of list) {
+    const mime = TICKET_MIME[extname(t.file).toLowerCase()];
+    if (!mime) throw new Error(`Demo ticket ${t.file}: only PDF, PNG and JPG are supported`);
+    await cp(join(root, 'demo/private/tickets', t.file), join(out, 'demo/tickets', t.file));
+    const { file, ...meta } = t;
+    demo.private.tickets.push({ ...meta, mime, file: `demo/tickets/${file}`, plain: true });
+  }
   await writeFile(join(out, 'demo/trip.json'), JSON.stringify(demo));
   await writeFile(join(out, '.nojekyll'), '');
   const version = await hashTree(out, ['trips', 'sw.js']);

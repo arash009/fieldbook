@@ -36,3 +36,46 @@ export function iconPng(size) {
 export async function writeIcons(dir) {
   for (const size of [192, 512]) await writeFile(join(dir, `icon-${size}.png`), iconPng(size));
 }
+
+// The demo's sample ticket: a 600×600 block pattern, like a barcode, with SAMPLE written in blocks in the middle.
+const FONT = {
+  S: ['01111', '10000', '10000', '01110', '00001', '00001', '11110'],
+  A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
+  M: ['10001', '11011', '10101', '10101', '10001', '10001', '10001'],
+  P: ['11110', '10001', '10001', '11110', '10000', '10000', '10000'],
+  L: ['10000', '10000', '10000', '10000', '10000', '10000', '11111'],
+  E: ['11111', '10000', '10000', '11110', '10000', '10000', '11111'],
+};
+
+export function samplePng(size = 600) {
+  const cell = 20;
+  const word = 'SAMPLE';
+  const dot = 6;
+  const textW = (word.length * 6 - 1) * dot;
+  const textH = 7 * dot;
+  const box = [(size - textW) / 2 - 24, (size - textH) / 2 - 24, (size + textW) / 2 + 24, (size + textH) / 2 + 24];
+  const inText = (x, y) => {
+    const tx = Math.floor((x - (size - textW) / 2) / dot);
+    const ty = Math.floor((y - (size - textH) / 2) / dot);
+    if (tx < 0 || ty < 0 || ty >= 7 || tx >= word.length * 6 - 1 || tx % 6 === 5) return false;
+    return FONT[word[Math.floor(tx / 6)]][ty][tx % 6] === '1';
+  };
+  const row = size * 3 + 1;
+  const pixels = Buffer.alloc(row * size, 255);
+  for (let y = 0; y < size; y++) {
+    pixels[y * row] = 0;
+    for (let x = 0; x < size; x++) {
+      const inBoxArea = x >= box[0] && x < box[2] && y >= box[1] && y < box[3];
+      const cx = Math.floor(x / cell);
+      const cy = Math.floor(y / cell);
+      const block = ((cx * 7919 + cy * 104729 + cx * cy * 31) % 11) < 5;
+      const black = inBoxArea ? inText(x, y) : block;
+      if (black) pixels.fill(0, y * row + 1 + x * 3, y * row + 4 + x * 3);
+    }
+  }
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(size, 0);
+  header.writeUInt32BE(size, 4);
+  header.set([8, 2, 0, 0, 0], 8);
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', header), chunk('IDAT', deflateSync(pixels)), chunk('IEND', Buffer.alloc(0))]);
+}

@@ -1,7 +1,8 @@
 // Boots the app: landing page, demo, a remembered encrypted trip, or a single-file backup.
 import { localNow, parseNowOverride, daysBetween, addDays } from './clock.js';
 import { forecastUrl, parseForecast } from './weather.js';
-import { open, openWithKey } from './crypto.js';
+import { open, openWithKey, openBytes } from './crypto.js';
+import { openTicketViewer } from './ticket-viewer.js';
 import { loadKey, saveKey, forgetKey } from './keystore.js';
 import { loadTicks, saveTicks, toggleTick } from './ticks.js';
 import { indexPayload, rebaseDates } from './data.js';
@@ -89,7 +90,7 @@ async function unlockFlow(envelope) {
   S.envelope = envelope;
   const stored = await loadKey(S.tripId);
   if (stored && stored.salt === envelope.salt) {
-    try { ready(await openWithKey(envelope, stored.key)); return; } catch { /* the passphrase changed: ask again */ }
+    try { const data = await openWithKey(envelope, stored.key); S.key = stored.key; ready(data); return; } catch { /* the passphrase changed: ask again */ }
   }
   show(unlockView());
   main.querySelector('input')?.focus();
@@ -101,6 +102,7 @@ async function submitUnlock(form) {
   try {
     const { key, data } = await open(S.envelope, pass);
     await saveKey(S.tripId, key, S.envelope.salt);
+    S.key = key;
     ready(data);
   } catch {
     show(unlockView({ error: "That passphrase didn't work." }));
@@ -239,6 +241,17 @@ ACTIONS.gps = () => {
     S.ui.gps = { on: true, pos };
     render();
   }, (e) => gpsOff(e.code === 1 ? 'Location is blocked for this site. Allow it in Chrome settings to use Where am I?' : "Couldn't get your location."), { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+};
+
+ACTIONS.ticket = (el) => {
+  const t = (S.data.private.tickets ?? []).find((x) => x.id === el.dataset.id);
+  if (!t) return;
+  if (S.mode === 'file') { toast('Tickets open in the online app.'); return; }
+  openTicketViewer({ ticket: t, load: async () => {
+    const res = await fetch(t.plain ? t.file : `trips/${t.file}`, { cache: 'no-cache' });
+    if (!res.ok) throw new Error(String(res.status));
+    return t.plain ? new Uint8Array(await res.arrayBuffer()) : openBytes(await res.json(), S.key);
+  } });
 };
 
 document.addEventListener('click', (event) => {

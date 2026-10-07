@@ -1,14 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { cp, mkdtemp, readFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { encryptTrip, checkPassphrase } from '../scripts/lib/encrypt.mjs';
 import { serve } from '../scripts/lib/serve.mjs';
 import { deploy } from '../scripts/lib/deploy.mjs';
-import { open } from '../app/js/crypto.js';
+import { open, openBytes } from '../app/js/crypto.js';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const PASS = 'amber-otter-quiet-ladder-mango-seven';
@@ -59,4 +59,22 @@ test('deploy pushes the folder as one orphan commit', async () => {
   await deploy({ dir: site, repoDir: repo, branch: 'gh-pages' });
   assert.equal(git(remote, 'rev-list', '--count', 'gh-pages').trim(), '1');
   assert.match(git(remote, 'ls-tree', '--name-only', 'gh-pages'), /index\.html/);
+});
+
+test('encryptTrip packs each ticket as its own encrypted file', async () => {
+  const trip = await mkdtemp(join(tmpdir(), 'fb-trip-'));
+  await cp(join(ROOT, 'demo'), trip, { recursive: true });
+  await writeFile(join(trip, 'private/tickets.json'), JSON.stringify([{ id: 't1', label: 'Castle', date: '2030-06-01', booking: 'castle', file: 'sample.png' }]));
+  const out = await mkdtemp(join(tmpdir(), 'fb-out-'));
+  await encryptTrip({ root: ROOT, tripDir: trip, outDir: out, id: 'abcd1234', passphrase: PASS, iterations: 1000 });
+  const env = JSON.parse(await readFile(join(out, 'abcd1234.enc'), 'utf8'));
+  const { data, key } = await open(env, PASS);
+  const t = data.private.tickets[0];
+  assert.match(t.file, /^abcd1234\/[0-9a-f]{16}\.enc$/);
+  assert.equal(t.mime, 'image/png');
+  const fileEnv = JSON.parse(await readFile(join(out, t.file), 'utf8'));
+  const original = await readFile(join(trip, 'private/tickets/sample.png'));
+  assert.deepEqual(Buffer.from(await openBytes(fileEnv, key)), original);
+  await writeFile(join(trip, 'private/tickets.json'), JSON.stringify([{ id: 't2', label: 'X', date: '2030-06-01', file: 'missing.pdf' }]));
+  await assert.rejects(encryptTrip({ root: ROOT, tripDir: trip, outDir: out, id: 'abcd1234', passphrase: PASS, iterations: 1000 }), /missing\.pdf/);
 });

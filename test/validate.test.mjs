@@ -66,7 +66,7 @@ test('loadTripDir reads the folder layout and defaults optional files', async ()
   assert.equal(p.format, 'fieldbook/1');
   assert.equal(p.guides[0].id, 'g1');
   assert.deepEqual(p.transport, {});
-  assert.deepEqual(p.private, { stays: {}, config: {} });
+  assert.deepEqual(p.private, { stays: {}, config: {}, ticketList: [] });
 });
 
 test('loadTripDir explains a missing or broken trip.json', async () => {

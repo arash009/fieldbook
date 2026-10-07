@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { seal, open, openWithKey, deriveKey, randomBytes, toBase64, fromBase64 } from '../app/js/crypto.js';
+import { seal, open, openWithKey, deriveKey, randomBytes, toBase64, fromBase64, sealBytes, openBytes } from '../app/js/crypto.js';
 
 const FAST = { iterations: 1000 };
 
@@ -36,4 +36,12 @@ test('base64 helpers survive large binary', () => {
 test('derived keys cannot be exported', async () => {
   const key = await deriveKey('x', randomBytes(16), 1000);
   await assert.rejects(globalThis.crypto.subtle.exportKey('raw', key));
+});
+
+test('bytes round-trip with a key', async () => {
+  const { key } = await open(await seal({ a: 1 }, 'p q r s t u', FAST), 'p q r s t u');
+  const bytes = randomBytes(5000);
+  const env = await sealBytes(bytes, key);
+  assert.equal(env.kind, 'file');
+  assert.deepEqual(await openBytes(env, key), bytes);
 });
