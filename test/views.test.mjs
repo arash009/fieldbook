@@ -16,6 +16,7 @@ import { renderApp } from '../app/js/views/shell.js';
 import { landingView } from '../app/js/views/landing.js';
 import { unlockView } from '../app/js/views/unlock.js';
 import { entryCard, entryBadge } from '../app/js/views/entry.js';
+import { lineStrip } from '../app/js/views/strip.js';
 
 const demo = indexPayload(await loadTripDir(fileURLToPath(new URL('../demo/', import.meta.url))));
 const ctxAt = (date, time, hash = '#/today', extra = {}) => ({
@@ -167,4 +168,44 @@ test('guide page shows the photo with its credit, read-more links and Listen', (
   assert.match(out, /Read more/);
   assert.match(out, /Short film · 5 min/);
   assert.match(out, /data-action="listen" data-id="belem-tower"/);
+});
+
+const stripCtx = () => {
+  const ctx = ctxAt('2030-06-01', '09:00', '#/stop/d1-tram-castle');
+  ctx.transport = { ...ctx.transport, lines: { ...ctx.transport.lines, 'lis-28': { ...ctx.transport.lines['lis-28'], mapUrl: 'https://www.carris.pt/en/', stops: [
+    { name: 'Martim Moniz', lat: 38.7158, lng: -9.1359 }, { name: 'Rua da Conceição', lat: 38.7105, lng: -9.1368 }, { name: 'Sé', lat: 38.7099, lng: -9.1327 },
+    { name: 'Miradouro de Santa Luzia', lat: 38.7118, lng: -9.1300 }] } } };
+  return ctx;
+};
+
+test('a tram leg with from/to/direction draws a strip with board and get-off stops', () => {
+  const ctx = stripCtx();
+  const out = String(lineStrip(ctx, { line: 'lis-28', from: 'Rua da Conceição', to: 'Miradouro de Santa Luzia', direction: 'Miradouro de Santa Luzia' }, {}));
+  assert.match(out, /Rua da Conceição[\s\S]*BOARD[\s\S]*Sé[\s\S]*Miradouro de Santa Luzia[\s\S]*GET OFF/);
+  assert.match(out, /2 stops/);
+  const near = String(lineStrip({ ...ctx, ui: { tabs: {}, gps: { on: true, pos: { lat: 38.7100, lng: -9.1328 } } } }, { line: 'lis-28', from: 'Rua da Conceição', to: 'Miradouro de Santa Luzia', direction: 'Miradouro de Santa Luzia' }, {}));
+  assert.match(near, /YOU'RE HERE/);
+  assert.match(near, /1 stop to Miradouro de Santa Luzia/);
+  assert.equal(lineStrip(ctx, { line: 'lis-28', to: 'Sé', direction: 'Sé' }, {}), null);
+});
+
+test('boards link each train to its live status and show calls-at for the plan', () => {
+  const ctx = ctxAt('2030-06-02', '14:00', '#/stop/d2-train');
+  const b = ctx.transport.boards['belem-cais'];
+  ctx.transport = { ...ctx.transport, liveStatus: { rail: 'https://live.example/{number}' }, boards: { ...ctx.transport.boards, 'belem-cais': { ...b, buyUrl: 'https://www.cp.pt/', tabs: [{ ...b.tabs[0], rows: b.tabs[0].rows.map((r) => ({ ...r, train: `CP ${r.times[0].replace(':', '')}`, operator: 'rail', ...(r.times[0] === '15:02' ? { stops: [{ name: 'Belém', time: '15:02' }, { name: 'Cais do Sodré', time: '15:10' }] } : {}) })) }] } } };
+  const out = String(stopView(ctx));
+  assert.match(out, /href="https:\/\/live\.example\/1502"[^>]*>Live status ›/);
+  assert.match(out, /href="https:\/\/www\.cp\.pt\/"[^>]*>Buy ticket ›/);
+  assert.match(out, /Calls at/);
+  assert.match(out, /href="https:\/\/live\.example\/1422"/);
+});
+
+test('a board row names its train once, even when the note already gives the number', () => {
+  const ctx = ctxAt('2030-06-02', '14:00', '#/stop/d2-train');
+  const b = ctx.transport.boards['belem-cais'];
+  const rows = b.tabs[0].rows.map((r) => (r.times[0] === '14:22' ? { ...r, train: 'CP 1422', note: 'Sample: service 1422' } : r.times[0] === '14:42' ? { ...r, train: 'CP 1442' } : r));
+  ctx.transport = { ...ctx.transport, boards: { ...ctx.transport.boards, 'belem-cais': { ...b, tabs: [{ ...b.tabs[0], rows }] } } };
+  const out = String(stopView(ctx));
+  assert.doesNotMatch(out, /CP 1422/);
+  assert.match(out, /CP 1442/);
 });

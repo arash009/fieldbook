@@ -1,7 +1,8 @@
 // One stop in detail: transport options with later times, departure boards, meal and stay cards.
-import { html } from '../html.js';
+import { html, safeUrl } from '../html.js';
 import { formatDay } from '../clock.js';
-import { findStop, findDining, stopTickId, boardRows, guideIdsOf, entryFor, ticketFor } from '../plan.js';
+import { findStop, findDining, stopTickId, boardRows, guideIdsOf, entryFor, ticketFor, liveUrl } from '../plan.js';
+import { lineStrip, callsAt } from './strip.js';
 import { entryBadge, entryCard } from './entry.js';
 import { kv, sources, mapButton, notFound, range, lineChip, backLink } from './parts.js';
 import { askLine } from './ask.js';
@@ -49,7 +50,14 @@ export function routePanel(ctx, key, route) {
 
 function transitOption(ctx, o) {
   const service = o.service ? ctx.transport.services[o.service] : null;
-  return html`<ol class="legs">${(o.legs ?? []).map((l) => legRow(ctx, l))}</ol>
+  const legs = o.legs ?? [];
+  const strips = legs.map((l, i) => (l.line ? lineStrip(ctx, l, { change: legs.slice(i + 1).some((x) => x.line) }) : null));
+  const lineIds = [...new Set(legs.filter((l) => l.line).map((l) => l.line))];
+  const maps = lineIds.map((id) => ctx.transport.lines[id]).filter((l) => safeUrl(l?.mapUrl));
+  const gps = ctx.ui.gps ?? {};
+  return html`${strips.some(Boolean) ? html`<button class="pill gps${gps.on ? ' on' : ''}" type="button" data-action="gps" aria-pressed="${Boolean(gps.on)}">📍 Where am I? ${gps.on ? 'On' : 'Off'}</button>${gps.error ? html`<p class="n">${gps.error}</p>` : ''}` : ''}
+    ${legs.map((l, i) => strips[i] ?? html`<ol class="legs">${legRow(ctx, l)}</ol>`)}
+    ${maps.length ? html`<div class="btns">${maps.map((l) => html`<a class="btn" href="${l.mapUrl}" target="_blank" rel="noopener">🗺 ${l.name ?? l.label} map ›</a>`)}</div>` : ''}
     ${service || o.later ? html`<h3 class="sec">Going later?</h3>${kv('Runs', service?.hoursText)}${kv('Every', service?.frequency)}${kv('Leave by', o.later)}` : ''}
     ${o.fare || o.pay ? html`<h3 class="sec">Paying</h3>${kv('Fare', o.fare)}${kv('How', o.pay)}` : ''}
     ${kv('Access', o.access)}
@@ -80,12 +88,18 @@ export function boardPanel(ctx, board, defaultTab, fallbackDate) {
   const i = Math.min(ctx.ui.tabs[group] ?? defaultTab, board.tabs.length - 1);
   const tab = board.tabs[i];
   const rows = boardRows(tab, tab.date ?? board.date ?? fallbackDate, ctx.now);
+  const planned = rows.find((r) => r.state === 'plan');
+  const live = (r) => liveUrl(ctx.transport, r.train, r.operator);
+  const head = planned ? html`<div class="btns">${live(planned) ? html`<a class="btn p" href="${live(planned)}" target="_blank" rel="noopener">Live status ›</a>` : ''}${safeUrl(board.buyUrl) ? html`<a class="btn" href="${board.buyUrl}" target="_blank" rel="noopener">Buy ticket ›</a>` : ''}</div>
+    ${planned.stops?.length ? html`<h3 class="sec">Calls at · ${planned.train ?? ''}</h3>${callsAt(planned.stops)}` : ''}` : '';
+  const trainLabel = (r) => (r.train && !String(r.note ?? '').includes(r.train.replace(/^\D+/, '')) ? r.train : '');
   return html`<section class="panel">
     ${board.title ? html`<h3 class="sec">${board.title}</h3>` : ''}
     ${board.tabs.length > 1 ? tabs(group, board.tabs.map((t) => t.label), i) : ''}
     ${tab.note ? html`<p class="n">${tab.note}</p>` : ''}
+    ${head}
     <div class="scroll-x"><table class="board"><thead><tr><th></th>${tab.stations.map((s) => html`<th scope="col">${s}</th>`)}</tr></thead>
-      <tbody>${rows.map((r) => html`<tr class="${r.state}${r.gone ? ' gone' : ''}"><td>${r.state === 'plan' ? html`<span class="tag">PLAN</span>` : r.flag ? html`<span class="tag flag">${r.flag}</span>` : ''}</td>${r.times.map((t) => html`<td class="t">${t ?? '–'}</td>`)}</tr>${r.note ? html`<tr class="rnote"><td></td><td colspan="${r.times.length}">${r.flag && r.state === 'plan' ? `${r.flag}: ` : ''}${r.note}</td></tr>` : ''}`)}</tbody></table></div>
+      <tbody>${rows.map((r) => html`<tr class="${r.state}${r.gone ? ' gone' : ''}"><td>${r.state === 'plan' ? html`<span class="tag">PLAN</span>` : r.flag ? html`<span class="tag flag">${r.flag}</span>` : ''}</td>${r.times.map((t) => html`<td class="t">${t ?? '–'}</td>`)}</tr>${r.note || live(r) || trainLabel(r) ? html`<tr class="rnote"><td></td><td colspan="${r.times.length}">${r.flag && r.state === 'plan' ? `${r.flag}: ` : ''}${[trainLabel(r), r.note].filter(Boolean).join(' · ')}${live(r) ? html`${r.note || trainLabel(r) ? ' · ' : ''}<a href="${live(r)}" target="_blank" rel="noopener">Live ›</a>` : ''}</td></tr>` : ''}`)}</tbody></table></div>
     ${board.notes ? html`<p class="n">${board.notes}</p>` : ''}
     ${sources(board.checked, board.sources)}</section>`;
 }
